@@ -54,23 +54,14 @@ struct bitfield_t
     constexpr operator int() const noexcept { return (int(reg::value())& mask)>>start; }
 };
 
-
-template<int start, int width, typename reg, std::size_t... I>
-constexpr auto make_field_array(std::index_sequence<I...>)
-{
-    return std::make_tuple(bitfield_t<reg, (I*width)+start, ((I+1)*width)+start-1>{}...);
-}
-
-
 template <int start_index, int stop_index, typename reg, std::size_t N>
 struct bitfield_array_t: reg
 {
-    static constexpr const std::tuple fields = make_field_array<start_index, stop_index-start_index+1, reg>(std::make_index_sequence<N>{});
-
     template<std::size_t i>
     static constexpr auto get() noexcept
     {
-        return std::get<i>(fields);
+        constexpr bool width=stop_index-start_index+1;
+        return bitfield_t<reg, (i*width)+start_index, ((i+1)*width)+start_index-1>{};
     }
 };
 

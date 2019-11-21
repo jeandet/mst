@@ -21,18 +21,18 @@ namespace ucpp::stm32 {
 //    const DeviceSignature dev;
     struct stm32f7_t{
         DeviceSignature deviceSignature;
-        gpio::Gpio<0x40020000> GPIOA;
-        gpio::Gpio<0x40020400> GPIOB;
-        gpio::Gpio<0x40020800> GPIOC;
-        gpio::Gpio<0x40020C00> GPIOD;
-        gpio::Gpio<0x40021000> GPIOE;
-        gpio::Gpio<0x40021400> GPIOF;
-        gpio::Gpio<0x40021800> GPIOG;
-        gpio::Gpio<0x40021C00> GPIOH;
-        gpio::Gpio<0x40022000> GPIOI;
-        gpio::Gpio<0x40022400> GPIOJ;
-        gpio::Gpio<0x40022800> GPIOK;
-        rcc::RCC_t<0x40023800> rcc;
+        gpio::Gpio<0x40020000,1> GPIOA;
+        gpio::Gpio<0x40020400,2> GPIOB;
+        gpio::Gpio<0x40020800,3> GPIOC;
+        gpio::Gpio<0x40020C00,4> GPIOD;
+        gpio::Gpio<0x40021000,5> GPIOE;
+        gpio::Gpio<0x40021400,6> GPIOF;
+        gpio::Gpio<0x40021800,7> GPIOG;
+        gpio::Gpio<0x40021C00,8> GPIOH;
+        gpio::Gpio<0x40022000,9> GPIOI;
+        gpio::Gpio<0x40022400,10> GPIOJ;
+        gpio::Gpio<0x40022800,11> GPIOK;
+        rcc::RCC_t<0x40023800, 0> rcc;
     }stm32f7;
 }
 

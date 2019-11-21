@@ -1,14 +1,16 @@
 #pragma once
 #include <stdint.h>
 #include "../register.hpp"
-
+#include "../peripherals_tags.hpp"
+#include "./gpio-regs.hpp"
 
 using namespace ucpp::registers;
 namespace ucpp::stm32::gpio {
 
-template<uint32_t base_address>
+template<uint32_t base_address, int index>
 struct Gpio
 {
+    using tag = ucpp::tags::gpio_tag<index>;
     bitfield_array_t<0,2,reg_t<uint32_t, base_address> ,16> mode;
     bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x4> ,16> output_type;
     bitfield_array_t<0,2,reg_t<uint32_t, base_address+0x8> ,16> speed;

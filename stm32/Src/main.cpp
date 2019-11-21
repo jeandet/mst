@@ -17,21 +17,25 @@
 #include "../../ucpp/strong_types.hpp"
 #include <iostream>
 
+
+int func1()
+{
+    return int(ucpp::stm32::stm32f7.GPIOC.id.get<13>());
+}
+
+int func2()
+{
+    return (*((volatile uint32_t*)(0x40020800 + 0xC))) >> 13;
+}
+
+
 int main(void)
 {
-    printf("hello\n");
-    std::cout << ucpp::stm32::stm32f7.deviceSignature.flash_size << std::endl;
-    int v = ucpp::stm32::stm32f7.deviceSignature.flash_size;
-    int pkg = ucpp::stm32::stm32f7.deviceSignature.package.pkg;
-    int p = ucpp::stm32::stm32f7.GPIOA.output_type.get<0>();
-    ucpp::stm32::stm32f7.rcc.AHB1ENR.GPIOCEN = 1;
-    ucpp::stm32::stm32f7.rcc.AHB1ENR.CRCEN = 1;
-    int l = ucpp::stm32::stm32f7.rcc.AHB1ENR;
-    int cd = 0;
-    // int s = sizeof(ucpp::stm32::stm32f7);
+    volatile int cd1;
+    volatile int cd2;
     for (;;)
     {
-        cd = ucpp::stm32::stm32f7.GPIOC.id.get<13>();
-        cd = ucpp::stm32::stm32f7.GPIOC.id;
+        cd1 = func1();
+        cd2 = func2();
     }
 }
