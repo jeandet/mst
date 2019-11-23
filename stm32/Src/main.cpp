@@ -61,7 +61,7 @@ int main(void)
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
-    stm32f7.GPIOK.output_type.get<3>() = 1;
+    stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
     for (;;)
     {

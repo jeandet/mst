@@ -19,6 +19,10 @@ enum class speed{
     high = 2,
     very_high = 3
 };
+enum class output_type{
+    push_pull = 0,
+    open_drain = 1
+};
 enum class alternate_function
 {
     af0 = 0,
@@ -67,7 +71,7 @@ struct Gpio
     static constexpr int index = peripheral_index;
     static constexpr int address = base_address;
     static bitfield_array_t<0,2,reg_t<uint32_t, base_address> ,16, mode> moder;
-    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x4> ,16> output_type;
+    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x4> ,16, output_type>  output_typer;
     static bitfield_array_t<0,2,reg_t<uint32_t, base_address+0x8> ,16, speed> speedr;
     static bitfield_array_t<0,2,reg_t<uint32_t, base_address+0xc> ,16> pupd;
     static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x10> ,16> id;
