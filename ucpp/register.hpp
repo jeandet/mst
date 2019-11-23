@@ -45,11 +45,11 @@ struct bitfield_t
     static constexpr const int stop = stop_index;
     static constexpr const typename reg::type mask = details::compute_mask<typename reg::type, start, stop>();
 
-    inline bitfield_t& operator=(const value_t& value) noexcept
+    inline constexpr bitfield_t operator=(const value_t& value) const noexcept
     {
         typename reg::type tmp = ((static_cast<int>(value)<<start) & mask);
         reg::value() = (reg::value() &  ~mask)|tmp;
-        return *this;
+        return bitfield_t<reg,start_index,stop_index,value_t>{};
     }
 
     constexpr operator value_t() noexcept { return value_t((int(reg::value())& mask)>>start); }

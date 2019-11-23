@@ -8,7 +8,7 @@
 namespace  {
 
 template<typename rcc_t, typename device_t>
-auto& clk_enable_bit(rcc_t& rcc, const device_t&, typename std::enable_if_t<std::is_same_v<typename device_t::tag, ucpp::tags::gpio_tag>>* = 0)
+auto& clk_enable_bit(const rcc_t& rcc, const device_t&, typename std::enable_if_t<std::is_same_v<typename device_t::tag, ucpp::tags::gpio_tag>>* = 0)
 {
     if constexpr (device_t::index==0)
         return rcc.AHB1ENR.GPIOAEN;
@@ -35,7 +35,7 @@ auto& clk_enable_bit(rcc_t& rcc, const device_t&, typename std::enable_if_t<std:
 }
 
 template<typename rcc_t, typename device_t>
-auto& clk_enable_bit(rcc_t& rcc, const device_t&, typename std::enable_if_t<std::is_same_v<typename device_t::tag, ucpp::tags::sdmmc_tag>>* = 0)
+auto& clk_enable_bit(const rcc_t& rcc, const device_t&, typename std::enable_if_t<std::is_same_v<typename device_t::tag, ucpp::tags::sdmmc_tag>>* = 0)
 {
     return rcc.APB2ENR.SDMMC1EN;
 }
@@ -46,7 +46,7 @@ using namespace ucpp::registers;
 namespace ucpp::stm32::rcc
 {
 template<typename rcc_type, typename device_t>
-void enable_clock(rcc_type& rccdev, const device_t& device, bool state = true)
+void enable_clock(const rcc_type& rccdev, const device_t& device, bool state = true)
 {
     clk_enable_bit(rccdev, device)=state;
 }
