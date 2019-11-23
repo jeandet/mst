@@ -3,6 +3,7 @@
 #include "../register.hpp"
 #include "./gpio.hpp"
 #include "./rcc.hpp"
+#include "./sdmmc-regs.hpp"
 
 using namespace ucpp::registers;
 namespace ucpp::stm32 {
@@ -21,18 +22,19 @@ namespace ucpp::stm32 {
 //    const DeviceSignature dev;
     struct stm32f7_t{
         DeviceSignature deviceSignature;
-        gpio::Gpio<0x40020000,1> GPIOA;
-        gpio::Gpio<0x40020400,2> GPIOB;
-        gpio::Gpio<0x40020800,3> GPIOC;
-        gpio::Gpio<0x40020C00,4> GPIOD;
-        gpio::Gpio<0x40021000,5> GPIOE;
-        gpio::Gpio<0x40021400,6> GPIOF;
-        gpio::Gpio<0x40021800,7> GPIOG;
-        gpio::Gpio<0x40021C00,8> GPIOH;
-        gpio::Gpio<0x40022000,9> GPIOI;
-        gpio::Gpio<0x40022400,10> GPIOJ;
-        gpio::Gpio<0x40022800,11> GPIOK;
+        gpio::Gpio<0x40020000,0> GPIOA;
+        gpio::Gpio<0x40020400,1> GPIOB;
+        gpio::Gpio<0x40020800,2> GPIOC;
+        gpio::Gpio<0x40020C00,3> GPIOD;
+        gpio::Gpio<0x40021000,4> GPIOE;
+        gpio::Gpio<0x40021400,5> GPIOF;
+        gpio::Gpio<0x40021800,6> GPIOG;
+        gpio::Gpio<0x40021C00,7> GPIOH;
+        gpio::Gpio<0x40022000,8> GPIOI;
+        gpio::Gpio<0x40022400,9> GPIOJ;
+        gpio::Gpio<0x40022800,10> GPIOK;
         rcc::RCC_t<0x40023800, 0> rcc;
+        sdmmc::sdmmc_t<0x40012C00, 0> sdmmc;
     }stm32f7;
 }
 

@@ -13,29 +13,59 @@
 #endif
 
 #include "../../ucpp/register.hpp"
+#include "../../ucpp/stm32/gpio.hpp"
+#include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
 #include <iostream>
+volatile int cd;
+using namespace ucpp::stm32;
 
+// SDMMC_D0 (PC8)  AF12
+// SDMMC_D1 (PC9)  AF12
+// SDMMC_D2 (PC10) AF12
+// SDMMC_D3 (PC11) AF12
+// SDMMC_CK (PC12) AF12
+// SDMMC_CMD (PD2) AF12
 
-int func1()
+template <typename gpio_t, int I>
+inline void _setup_sd_io(gpio_t& gpio)
 {
-    return int(ucpp::stm32::stm32f7.GPIOC.id.get<13>());
+    using namespace gpio;
+    alternate_function_field<I>(gpio) = alternate_function::af12;
+    mode_field<I>(gpio) = mode::alternate_function;
+    speed_field<I>(gpio) = gpio::speed::very_high;
 }
 
-int func2()
+template <typename gpio_t, int... I>
+inline void setup_sd_all_io(gpio_t& gpio)
 {
-    return (*((volatile uint32_t*)(0x40020800 + 0xC))) >> 13;
+    (_setup_sd_io<gpio_t, I>(gpio), ...);
 }
 
+inline void setup_sd_io()
+{
+    setup_sd_all_io<decltype(stm32f7.GPIOC), 8, 9, 10, 11, 12>(stm32f7.GPIOC);
+    setup_sd_all_io<decltype(stm32f7.GPIOD), 2>(stm32f7.GPIOD);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
+}
 
 int main(void)
 {
-    volatile int cd1;
-    volatile int cd2;
+    volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
+    volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
+    volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
+    cd = 10;
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
+    gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
+    stm32f7.GPIOK.output_type.get<3>() = 1;
+    stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
     for (;;)
     {
-        cd1 = func1();
-        cd2 = func2();
+        cd = stm32f7.GPIOC.id.get<13>();
+        stm32f7.GPIOK.od.get<3>() = stm32f7.GPIOC.id.get<13>();
     }
 }

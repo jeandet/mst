@@ -8,10 +8,12 @@
 using namespace ucpp::registers;
 namespace ucpp::stm32::rcc
 {
-template <uint32_t base_address, int index>
+template <uint32_t base_address, int peripheral_index>
 struct RCC_t
 {
-    using tag = ucpp::tags::no_tag<index>;
+    using tag = ucpp::tags::no_tag;
+    static constexpr int index = peripheral_index;
+    static constexpr int address = base_address;
     struct CR_t : reg_t<uint32_t, base_address + 0>
     {
         bitfield_t<CR_t, 27, 27> PLLI2SRDY;

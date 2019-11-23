@@ -8,10 +8,12 @@
 using namespace ucpp::registers;
 namespace ucpp::stm32::gpio
 {
-template <uint32_t base_address, int index>
+template <uint32_t base_address, int peripheral_index>
 struct gpio_t
 {
-    using tag = ucpp::tags::gpio_tag<index>;
+    using tag = ucpp::tags::gpio_tag;
+    static constexpr int index = peripheral_index;
+    static constexpr int address = base_address;
     struct MODER_t : reg_t<uint32_t, base_address + 0>
     {
         bitfield_t<MODER_t, 30> MODER15;

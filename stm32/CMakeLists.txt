@@ -21,7 +21,7 @@ SET(CMAKE_OBJDUMP arm-none-eabi-objdump)
 
 SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F746NGHX_FLASH.ld)
 
-SET(OPTIM_LEVEL "-O2")
+SET(OPTIM_LEVEL "-O0")
 
 SET(CMAKE_CXX_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -std=gnu++17 -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard")
 SET(CMAKE_C_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -std=gnu11" )

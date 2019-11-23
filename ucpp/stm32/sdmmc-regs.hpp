@@ -8,10 +8,12 @@
 using namespace ucpp::registers;
 namespace ucpp::stm32::sdmmc
 {
-template <uint32_t base_address, int index>
+template <uint32_t base_address, int peripheral_index>
 struct sdmmc_t
 {
-    using tag = ucpp::tags::sdmmc_tag<index>;
+    using tag = ucpp::tags::sdmmc_tag;
+    static constexpr int index = peripheral_index;
+    static constexpr int address = base_address;
     struct POWER_t : reg_t<uint32_t, base_address + 0>
     {
         bitfield_t<POWER_t, 0> PWRCTRL;
