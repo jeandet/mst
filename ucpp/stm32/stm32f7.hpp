@@ -3,7 +3,7 @@
 #include "../register.hpp"
 #include "./gpio.hpp"
 #include "./rcc.hpp"
-#include "./sdmmc-regs.hpp"
+#include "./sdmmc.hpp"
 
 using namespace ucpp::registers;
 namespace ucpp::stm32 {

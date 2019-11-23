@@ -13,11 +13,12 @@ struct reg_t
        return *reinterpret_cast<volatile T*>(address);
     }
 
-    inline reg_t& operator=(const T& value) noexcept
+    inline constexpr reg_t operator=(const T& value) const noexcept
     {
-        value() = value;
-        return *this;
+        reg_t::value() = value;
+        return reg_t<T,address>{};
     }
+
     constexpr operator volatile T&() noexcept { return value(); }
     constexpr operator const volatile T&() const noexcept { return *reinterpret_cast<volatile T*>(address); }
 };

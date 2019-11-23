@@ -48,6 +48,24 @@ inline void setup_sd_io()
     setup_sd_all_io<decltype(stm32f7.GPIOC), 8, 9, 10, 11, 12>(stm32f7.GPIOC);
     setup_sd_all_io<decltype(stm32f7.GPIOD), 2>(stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
+    stm32f7.sdmmc.CLKCR.CLKDIV = 40;
+    stm32f7.sdmmc.CLKCR.WIDBUS = 1;
+    stm32f7.sdmmc.POWER.PWRCTRL = 3;
+}
+
+inline void send_cmd(int cmd, int argument = 0)
+{
+    // sdmmc_cmdinit.Argument         = 0;
+    // sdmmc_cmdinit.CmdIndex         = SDMMC_CMD_ALL_SEND_CID;
+    // sdmmc_cmdinit.Response         = SDMMC_RESPONSE_LONG;
+    // sdmmc_cmdinit.WaitForInterrupt = SDMMC_WAIT_NO;
+    // sdmmc_cmdinit.CPSM             = SDMMC_CPSM_ENABLE;
+    // set arg
+    stm32f7.sdmmc.ARG = argument;
+    // set CMD
+    stm32f7.sdmmc.CMD.CPSMEN = 1;
+    stm32f7.sdmmc.CMD.WAITRESP = 1;
+    stm32f7.sdmmc.CMD.CMDINDEX = cmd;
 }
 
 int main(void)
@@ -58,21 +76,26 @@ int main(void)
     volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
     volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
     volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
+    volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
     // ===========================================================================
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
+    setup_sd_io();
 
     // GPIO K3 = LCD backlight ctrl
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
+    send_cmd(2, 0);
 
     for (;;)
     {
         card_detect = stm32f7.GPIOC.id.get<13>();
         stm32f7.GPIOK.od.get<3>() = stm32f7.GPIOC.id.get<13>();
         int v = stm32f7.GPIOK.id; // check that int() is working
+        // stm32f7.GPIOK.od = 10;  <- this has to be fixed simply CRTP reg_t class to change
+        // operator= return type
     }
 }
