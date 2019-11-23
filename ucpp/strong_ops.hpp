@@ -54,7 +54,7 @@ template<typename lhs_t=self_t, typename rhs_t=self_t, typename result_t=self_t,
         }
     };
 
-    template<class Object> struct type : ucpp::utils::conditional<permutable, permutation<Object>, void>
+    template<class Object> struct type : ucpp::utils::conditional<permutable, permutation<Object>, self_t>::type
     {
         inline friend resolve_t<result_t, Object> operator+(const resolve_t<lhs_t, Object>& lhs, const resolve_t<rhs_t, Object>& rhs)
         {
@@ -85,7 +85,7 @@ template<typename lhs_t=self_t, typename rhs_t=self_t, typename result_t=self_t,
         }
     };
 
-    template<class Object> struct type : ucpp::utils::conditional<permutable, permutation<Object>, void>
+    template<class Object> struct type : ucpp::utils::conditional<permutable, permutation<Object>, self_t>::type
     {
         friend resolve_t<result_t, Object> operator-(const resolve_t<lhs_t, Object>& lhs, const resolve_t<rhs_t, Object>& rhs)
         {
