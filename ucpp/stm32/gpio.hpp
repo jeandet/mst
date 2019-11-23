@@ -70,17 +70,17 @@ struct Gpio
     using tag = ucpp::tags::gpio_tag;
     static constexpr int index = peripheral_index;
     static constexpr int address = base_address;
-    static bitfield_array_t<0,2,reg_t<uint32_t, base_address> ,16, mode> moder;
-    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x4> ,16, output_type>  output_typer;
-    static bitfield_array_t<0,2,reg_t<uint32_t, base_address+0x8> ,16, speed> speedr;
-    static bitfield_array_t<0,2,reg_t<uint32_t, base_address+0xc> ,16> pupd;
-    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x10> ,16> id;
-    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x14> ,16> od;
-    static bitfield_array_t<16,1,reg_t<uint32_t, base_address+0x18> ,16> br;
-    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x18> ,16> bs;
-    static bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x1c> ,16> lck;
-    static bitfield_array_t<0,4,reg_t<uint32_t, base_address+0x20> ,8, alternate_function> afrl;
-    static bitfield_array_t<0,4,reg_t<uint32_t, base_address+0x24> ,8, alternate_function> afrh;
+    static constexpr bitfield_array_t<0,2,reg_t<uint32_t, base_address> ,16, mode> moder ={};
+    static constexpr bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x4> ,16, output_type>  output_typer={};
+    static constexpr bitfield_array_t<0,2,reg_t<uint32_t, base_address+0x8> ,16, speed> speedr={};
+    static constexpr bitfield_array_t<0,2,reg_t<uint32_t, base_address+0xc> ,16> pupd={};
+    static constexpr bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x10> ,16> id = {};
+    static constexpr bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x14> ,16> od={};
+    static constexpr bitfield_array_t<16,1,reg_t<uint32_t, base_address+0x18> ,16> br={};
+    static constexpr bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x18> ,16> bs={};
+    static constexpr bitfield_array_t<0,1,reg_t<uint32_t, base_address+0x1c> ,16> lck={};
+    static constexpr bitfield_array_t<0,4,reg_t<uint32_t, base_address+0x20> ,8, alternate_function> afrl={};
+    static constexpr bitfield_array_t<0,4,reg_t<uint32_t, base_address+0x24> ,8, alternate_function> afrh={};
 };
 
 }

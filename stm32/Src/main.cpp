@@ -18,7 +18,7 @@
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
 #include <iostream>
-volatile int cd;
+volatile int card_detect;
 using namespace ucpp::stm32;
 
 // SDMMC_D0 (PC8)  AF12
@@ -52,20 +52,27 @@ inline void setup_sd_io()
 
 int main(void)
 {
+    /* ==========================================================================
+     *         Old style struct mapping for debug (gdb sugar)
+       ==========================================================================*/
     volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
     volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
     volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
-    cd = 10;
+    // ===========================================================================
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
+
+    // GPIO K3 = LCD backlight ctrl
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
+
     for (;;)
     {
-        cd = stm32f7.GPIOC.id.get<13>();
+        card_detect = stm32f7.GPIOC.id.get<13>();
         stm32f7.GPIOK.od.get<3>() = stm32f7.GPIOC.id.get<13>();
+        int v = stm32f7.GPIOK.id; // check that int() is working
     }
 }
