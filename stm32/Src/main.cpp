@@ -95,7 +95,6 @@ int main(void)
         card_detect = stm32f7.GPIOC.id.get<13>();
         stm32f7.GPIOK.od.get<3>() = stm32f7.GPIOC.id.get<13>();
         int v = stm32f7.GPIOK.id; // check that int() is working
-        // stm32f7.GPIOK.od = 10;  <- this has to be fixed simply CRTP reg_t class to change
-        // operator= return type
+        stm32f7.GPIOK.od = 10;
     }
 }
