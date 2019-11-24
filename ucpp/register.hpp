@@ -27,12 +27,13 @@ namespace details {
     template<typename T,int start, int stop>
     constexpr T compute_mask()
     {
+        constexpr unsigned long long all_one = ~0ull;
         if constexpr(start == stop)
         {
                 return static_cast<T>(1<<stop);
         }else
         {
-            return static_cast<T>((static_cast<unsigned long long>(-1)<<(stop+1)) xor (static_cast<unsigned long long>(-1)<<start));
+            return static_cast<T>((all_one<<(stop+1)) xor (all_one<<start));
         }
     }
 }
@@ -56,6 +57,21 @@ struct bitfield_t
     constexpr operator value_t() const noexcept { return value_t((int(reg_t::value())& mask)>>start); }
 };
 
+namespace  {
+
+template <int N>
+inline unsigned long long bitfield_cat(unsigned long long value, unsigned int width)
+{
+    return (value<<(N*width)) | bitfield_cat<N-1>(value, width);
+}
+
+template <>
+inline unsigned long long bitfield_cat<0>(unsigned long long value, unsigned int width)
+{
+    return value;
+}
+
+}
 
 template <std::size_t start_index, std::size_t width, typename reg_t, std::size_t count, typename value_t=int>
 struct bitfield_array_t
@@ -72,11 +88,13 @@ struct bitfield_array_t
     template<typename T>
     inline constexpr bitfield_array_t operator=(const T& value) const noexcept
     {
-        if constexpr(std::is_same_v<typename reg_t::type,T>)
-            reg_t::value() = field_mask & (value << start_index);
-        else if constexpr(std::conjunction_v<std::is_same<value_t,T>,std::negation<std::is_integral<T>>>)
+        constexpr bool might_be_enum_class = std::conjunction_v<std::is_same<value_t,T>,std::negation<std::is_integral<T>>>;
+        if constexpr(std::is_integral_v<T>)
+            reg_t::value() = mask & (value << start_index);
+        else if constexpr(might_be_enum_class)
         {
-            //reg_t::value() = field_mask & (value << start_index);
+            auto v = bitfield_cat<count-1>(static_cast<unsigned long long>(value), width);
+            reg_t::value() = mask & (v << start_index);
         }
         return bitfield_array_t<start_index,width,reg_t,count,value_t>{};
     }

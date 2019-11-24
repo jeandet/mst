@@ -150,7 +150,7 @@ TEST_CASE("bitfield_array", "[bitfield_array]")
     {
         reg::p_value = 0;
         fields = field_values::value1;
-        REQUIRE(fields == 0x5678);
-        REQUIRE(reg::p_value == 0x00567800);
+        REQUIRE(fields == 0xffff);
+        REQUIRE(reg::p_value == 0x00ffff00);
     }
 }
