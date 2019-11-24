@@ -20,7 +20,7 @@ namespace ucpp::stm32 {
     };
 
 //    const DeviceSignature dev;
-    struct stm32f7_t{
+    static constexpr struct stm32f7_t{
         DeviceSignature deviceSignature;
         static constexpr gpio::Gpio<0x40020000,0> GPIOA={};
         static constexpr gpio::Gpio<0x40020400,1> GPIOB = {};
@@ -35,6 +35,6 @@ namespace ucpp::stm32 {
         static constexpr gpio::Gpio<0x40022800,10> GPIOK = {};
         static constexpr rcc::RCC_t<0x40023800, 0> rcc = {};
         static constexpr sdmmc::sdmmc_t<0x40012C00, 0> sdmmc ={};
-    }stm32f7;
+    }stm32f7 = {};
 }
 

@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.5.0)
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-file(GLOB_RECURSE USER_SOURCES "Src/*.c" "Src/*.cpp" "Startup/startup_stm32f746nghx.s")
+file(GLOB_RECURSE SYSTEM_SRC "Syscalls/*.c" "Startup/startup_stm32f746nghx.s")
 
 # specify the cross compiler
 SET(CMAKE_C_COMPILER arm-none-eabi-gcc)
@@ -24,13 +24,16 @@ SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F746NGHX_FLASH.ld)
 SET(OPTIM_LEVEL "-O0")
 SET(CPP_STANDARD "gnu++17")
 
-SET(CMAKE_CXX_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -std=${CPP_STANDARD} -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard")
-SET(CMAKE_C_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -std=gnu11" )
-SET(CMAKE_ASM_FLAGS "-mcpu=cortex-m7 -g3 -c -x assembler-with-cpp --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard " )
-set (CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m7 -Wl,--gc-sections -mfpu=fpv5-sp-d16 -mfloat-abi=hard -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group -T ${LINKER_SCRIPT}" CACHE INTERNAL "executable linker flags")
+SET(CMAKE_CXX_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -flto -std=${CPP_STANDARD} -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard")
+SET(CMAKE_C_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -flto -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -std=gnu11" )
+SET(CMAKE_ASM_FLAGS "-mcpu=cortex-m7 -flto -g3 -c -x assembler-with-cpp --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard " )
+set (CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m7 -flto -Wl,--gc-sections -mfpu=fpv5-sp-d16 -mfloat-abi=hard -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group -T ${LINKER_SCRIPT}" CACHE INTERNAL "executable linker flags")
 
+file(GLOB_RECURSE SD_TESTS_SOURCES "Src/main.cpp")
 
-
-add_executable(${PROJECT_NAME} ${USER_SOURCES} ${LINKER_SCRIPT})
+add_executable(sd_tests ${SD_TESTS_SOURCES} ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(register_meta "Src/register_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(register_c_like "Src/register_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 #set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
 
