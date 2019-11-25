@@ -3,6 +3,23 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 project(fatpp C CXX ASM)
 cmake_minimum_required(VERSION 3.5.0)
 
+function(disassemble name target function)
+    add_custom_target(${name}
+        ALL
+        COMMAND gdb -batch -ex 'file $<TARGET_FILE:${target}>' -ex 'disassemble ${function}' > ${target}_${function}.S
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${target}
+        BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/${target}_${function}.S
+        )
+    set_target_properties(${name} PROPERTIES OUTPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/${target}_${function}.S)
+endfunction()
+function(compare_asm target1 target2)
+    get_target_property(asm1 ${target1} OUTPUT_FILE)
+    get_target_property(asm2 ${target2} OUTPUT_FILE)
+    add_test(NAME "cmp_${target1}_${target2}" COMMAND diff --side-by-side ${asm1} ${asm2})
+endfunction()
+
+
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
@@ -38,7 +55,17 @@ add_executable(bitfield_meta "Src/bitfield_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRI
 
 add_executable(register_c_like "Src/register_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_c_like "Src/bitfield_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
-#gdb -batch -ex 'file ../../build/build-stm32-arm_none_eabi_gcc-Debug/bitfield_meta' -ex 'disassemble main'
+
+disassemble(register_c_like_asm register_c_like main)
+disassemble(bitfield_c_like_asm bitfield_c_like main)
+
+disassemble(register_meta_asm register_meta main)
+disassemble(bitfield_meta_asm bitfield_meta main)
+
+enable_testing()
+
+compare_asm(register_c_like_asm register_meta_asm)
+compare_asm(bitfield_c_like_asm bitfield_meta_asm)
 
 #set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
