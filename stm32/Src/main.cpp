@@ -63,9 +63,8 @@ inline void send_cmd(int cmd, int argument = 0)
     // set arg
     stm32f7.sdmmc.ARG = argument;
     // set CMD
-    stm32f7.sdmmc.CMD.CPSMEN = 1;
-    stm32f7.sdmmc.CMD.WAITRESP = 1;
-    stm32f7.sdmmc.CMD.CMDINDEX = cmd;
+    using CMD=decltype (stm32f7.sdmmc.CMD) ;
+    stm32f7.sdmmc.CMD = CMD::CPSMEN.shift(1) | CMD::WAITRESP.shift(1) |CMD::CMDINDEX.shift(cmd);
 }
 
 int main(void)

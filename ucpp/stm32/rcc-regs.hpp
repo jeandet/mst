@@ -28,6 +28,7 @@ struct RCC_t
         static constexpr bitfield_t<CR_t, 3, 7> HSITRIM = {};
         static constexpr bitfield_t<CR_t, 1> HSIRDY = {};
         static constexpr bitfield_t<CR_t, 0> HSION = {};
+        using reg_t<uint32_t, base_address + 0>::operator=;
     } CR = {};
     static constexpr struct PLLCFGR_t : reg_t<uint32_t, base_address + 4>
     {
@@ -53,6 +54,7 @@ struct RCC_t
         static constexpr bitfield_t<PLLCFGR_t, 2> PLLM2 = {};
         static constexpr bitfield_t<PLLCFGR_t, 1> PLLM1 = {};
         static constexpr bitfield_t<PLLCFGR_t, 0> PLLM0 = {};
+        using reg_t<uint32_t, base_address + 4>::operator=;
     } PLLCFGR = {};
     static constexpr struct CFGR_t : reg_t<uint32_t, base_address + 8>
     {
@@ -69,6 +71,7 @@ struct RCC_t
         static constexpr bitfield_t<CFGR_t, 2> SWS0 = {};
         static constexpr bitfield_t<CFGR_t, 1> SW1 = {};
         static constexpr bitfield_t<CFGR_t, 0> SW0 = {};
+        using reg_t<uint32_t, base_address + 8>::operator=;
     } CFGR = {};
     static constexpr struct CIR_t : reg_t<uint32_t, base_address + 12>
     {
@@ -95,6 +98,7 @@ struct RCC_t
         static constexpr bitfield_t<CIR_t, 2> HSIRDYF = {};
         static constexpr bitfield_t<CIR_t, 1> LSERDYF = {};
         static constexpr bitfield_t<CIR_t, 0> LSIRDYF = {};
+        using reg_t<uint32_t, base_address + 12>::operator=;
     } CIR = {};
     static constexpr struct AHB1RSTR_t : reg_t<uint32_t, base_address + 16>
     {
@@ -115,6 +119,7 @@ struct RCC_t
         static constexpr bitfield_t<AHB1RSTR_t, 2> GPIOCRST = {};
         static constexpr bitfield_t<AHB1RSTR_t, 1> GPIOBRST = {};
         static constexpr bitfield_t<AHB1RSTR_t, 0> GPIOARST = {};
+        using reg_t<uint32_t, base_address + 16>::operator=;
     } AHB1RSTR = {};
     static constexpr struct AHB2RSTR_t : reg_t<uint32_t, base_address + 20>
     {
@@ -123,11 +128,13 @@ struct RCC_t
         static constexpr bitfield_t<AHB2RSTR_t, 5> HSAHRST = {};
         static constexpr bitfield_t<AHB2RSTR_t, 4> CRYPRST = {};
         static constexpr bitfield_t<AHB2RSTR_t, 0> DCMIRST = {};
+        using reg_t<uint32_t, base_address + 20>::operator=;
     } AHB2RSTR = {};
     static constexpr struct AHB3RSTR_t : reg_t<uint32_t, base_address + 24>
     {
         static constexpr bitfield_t<AHB3RSTR_t, 0> FMCRST = {};
         static constexpr bitfield_t<AHB3RSTR_t, 1> QSPIRST = {};
+        using reg_t<uint32_t, base_address + 24>::operator=;
     } AHB3RSTR = {};
     static constexpr struct APB1RSTR_t : reg_t<uint32_t, base_address + 32>
     {
@@ -160,6 +167,7 @@ struct RCC_t
         static constexpr bitfield_t<APB1RSTR_t, 27> CECRST = {};
         static constexpr bitfield_t<APB1RSTR_t, 9> LPTIM1RST = {};
         static constexpr bitfield_t<APB1RSTR_t, 24> I2C4RST = {};
+        using reg_t<uint32_t, base_address + 32>::operator=;
     } APB1RSTR = {};
     static constexpr struct APB2RSTR_t : reg_t<uint32_t, base_address + 36>
     {
@@ -180,6 +188,7 @@ struct RCC_t
         static constexpr bitfield_t<APB2RSTR_t, 26> LTDCRST = {};
         static constexpr bitfield_t<APB2RSTR_t, 23> SAI2RST = {};
         static constexpr bitfield_t<APB2RSTR_t, 11> SDMMC1RST = {};
+        using reg_t<uint32_t, base_address + 36>::operator=;
     } APB2RSTR = {};
     static constexpr struct AHB1ENR_t : reg_t<uint32_t, base_address + 48>
     {
@@ -206,6 +215,7 @@ struct RCC_t
         static constexpr bitfield_t<AHB1ENR_t, 2> GPIOCEN = {};
         static constexpr bitfield_t<AHB1ENR_t, 1> GPIOBEN = {};
         static constexpr bitfield_t<AHB1ENR_t, 0> GPIOAEN = {};
+        using reg_t<uint32_t, base_address + 48>::operator=;
     } AHB1ENR = {};
     static constexpr struct AHB2ENR_t : reg_t<uint32_t, base_address + 52>
     {
@@ -214,11 +224,13 @@ struct RCC_t
         static constexpr bitfield_t<AHB2ENR_t, 5> HASHEN = {};
         static constexpr bitfield_t<AHB2ENR_t, 4> CRYPEN = {};
         static constexpr bitfield_t<AHB2ENR_t, 0> DCMIEN = {};
+        using reg_t<uint32_t, base_address + 52>::operator=;
     } AHB2ENR = {};
     static constexpr struct AHB3ENR_t : reg_t<uint32_t, base_address + 56>
     {
         static constexpr bitfield_t<AHB3ENR_t, 0> FMCEN = {};
         static constexpr bitfield_t<AHB3ENR_t, 1> QSPIEN = {};
+        using reg_t<uint32_t, base_address + 56>::operator=;
     } AHB3ENR = {};
     static constexpr struct APB1ENR_t : reg_t<uint32_t, base_address + 64>
     {
@@ -251,6 +263,7 @@ struct RCC_t
         static constexpr bitfield_t<APB1ENR_t, 27> CECEN = {};
         static constexpr bitfield_t<APB1ENR_t, 9> LPTMI1EN = {};
         static constexpr bitfield_t<APB1ENR_t, 24> I2C4EN = {};
+        using reg_t<uint32_t, base_address + 64>::operator=;
     } APB1ENR = {};
     static constexpr struct APB2ENR_t : reg_t<uint32_t, base_address + 68>
     {
@@ -273,6 +286,7 @@ struct RCC_t
         static constexpr bitfield_t<APB2ENR_t, 26> LTDCEN = {};
         static constexpr bitfield_t<APB2ENR_t, 23> SAI2EN = {};
         static constexpr bitfield_t<APB2ENR_t, 11> SDMMC1EN = {};
+        using reg_t<uint32_t, base_address + 68>::operator=;
     } APB2ENR = {};
     static constexpr struct AHB1LPENR_t : reg_t<uint32_t, base_address + 80>
     {
@@ -302,6 +316,7 @@ struct RCC_t
         static constexpr bitfield_t<AHB1LPENR_t, 28> ETHMACPTPLPEN = {};
         static constexpr bitfield_t<AHB1LPENR_t, 29> OTGHSLPEN = {};
         static constexpr bitfield_t<AHB1LPENR_t, 30> OTGHSULPILPEN = {};
+        using reg_t<uint32_t, base_address + 80>::operator=;
     } AHB1LPENR = {};
     static constexpr struct AHB2LPENR_t : reg_t<uint32_t, base_address + 84>
     {
@@ -310,11 +325,13 @@ struct RCC_t
         static constexpr bitfield_t<AHB2LPENR_t, 5> HASHLPEN = {};
         static constexpr bitfield_t<AHB2LPENR_t, 4> CRYPLPEN = {};
         static constexpr bitfield_t<AHB2LPENR_t, 0> DCMILPEN = {};
+        using reg_t<uint32_t, base_address + 84>::operator=;
     } AHB2LPENR = {};
     static constexpr struct AHB3LPENR_t : reg_t<uint32_t, base_address + 88>
     {
         static constexpr bitfield_t<AHB3LPENR_t, 0> FMCLPEN = {};
         static constexpr bitfield_t<AHB3LPENR_t, 1> QSPILPEN = {};
+        using reg_t<uint32_t, base_address + 88>::operator=;
     } AHB3LPENR = {};
     static constexpr struct APB1LPENR_t : reg_t<uint32_t, base_address + 96>
     {
@@ -347,6 +364,7 @@ struct RCC_t
         static constexpr bitfield_t<APB1LPENR_t, 27> CECLPEN = {};
         static constexpr bitfield_t<APB1LPENR_t, 9> LPTIM1LPEN = {};
         static constexpr bitfield_t<APB1LPENR_t, 24> I2C4LPEN = {};
+        using reg_t<uint32_t, base_address + 96>::operator=;
     } APB1LPENR = {};
     static constexpr struct APB2LPENR_t : reg_t<uint32_t, base_address + 100>
     {
@@ -369,6 +387,7 @@ struct RCC_t
         static constexpr bitfield_t<APB2LPENR_t, 26> LTDCLPEN = {};
         static constexpr bitfield_t<APB2LPENR_t, 23> SAI2LPEN = {};
         static constexpr bitfield_t<APB2LPENR_t, 11> SDMMC1LPEN = {};
+        using reg_t<uint32_t, base_address + 100>::operator=;
     } APB2LPENR = {};
     static constexpr struct BDCR_t : reg_t<uint32_t, base_address + 112>
     {
@@ -379,6 +398,7 @@ struct RCC_t
         static constexpr bitfield_t<BDCR_t, 2> LSEBYP = {};
         static constexpr bitfield_t<BDCR_t, 1> LSERDY = {};
         static constexpr bitfield_t<BDCR_t, 0> LSEON = {};
+        using reg_t<uint32_t, base_address + 112>::operator=;
     } BDCR = {};
     static constexpr struct CSR_t : reg_t<uint32_t, base_address + 116>
     {
@@ -392,6 +412,7 @@ struct RCC_t
         static constexpr bitfield_t<CSR_t, 24> RMVF = {};
         static constexpr bitfield_t<CSR_t, 1> LSIRDY = {};
         static constexpr bitfield_t<CSR_t, 0> LSION = {};
+        using reg_t<uint32_t, base_address + 116>::operator=;
     } CSR = {};
     static constexpr struct SSCGR_t : reg_t<uint32_t, base_address + 128>
     {
@@ -399,12 +420,14 @@ struct RCC_t
         static constexpr bitfield_t<SSCGR_t, 30> SPREADSEL = {};
         static constexpr bitfield_t<SSCGR_t, 13, 27> INCSTEP = {};
         static constexpr bitfield_t<SSCGR_t, 0, 12> MODPER = {};
+        using reg_t<uint32_t, base_address + 128>::operator=;
     } SSCGR = {};
     static constexpr struct PLLI2SCFGR_t : reg_t<uint32_t, base_address + 132>
     {
         static constexpr bitfield_t<PLLI2SCFGR_t, 28, 30> PLLI2SR = {};
         static constexpr bitfield_t<PLLI2SCFGR_t, 24, 27> PLLI2SQ = {};
         static constexpr bitfield_t<PLLI2SCFGR_t, 6, 14> PLLI2SN = {};
+        using reg_t<uint32_t, base_address + 132>::operator=;
     } PLLI2SCFGR = {};
     static constexpr struct PLLSAICFGR_t : reg_t<uint32_t, base_address + 136>
     {
@@ -412,6 +435,7 @@ struct RCC_t
         static constexpr bitfield_t<PLLSAICFGR_t, 16, 17> PLLSAIP = {};
         static constexpr bitfield_t<PLLSAICFGR_t, 24, 27> PLLSAIQ = {};
         static constexpr bitfield_t<PLLSAICFGR_t, 28, 30> PLLSAIR = {};
+        using reg_t<uint32_t, base_address + 136>::operator=;
     } PLLSAICFGR = {};
     static constexpr struct DKCFGR1_t : reg_t<uint32_t, base_address + 140>
     {
@@ -421,6 +445,7 @@ struct RCC_t
         static constexpr bitfield_t<DKCFGR1_t, 20, 21> SAI1SEL = {};
         static constexpr bitfield_t<DKCFGR1_t, 22, 23> SAI2SEL = {};
         static constexpr bitfield_t<DKCFGR1_t, 24> TIMPRE = {};
+        using reg_t<uint32_t, base_address + 140>::operator=;
     } DKCFGR1 = {};
     static constexpr struct DKCFGR2_t : reg_t<uint32_t, base_address + 144>
     {
@@ -440,6 +465,7 @@ struct RCC_t
         static constexpr bitfield_t<DKCFGR2_t, 26> CECSEL = {};
         static constexpr bitfield_t<DKCFGR2_t, 27> CK48MSEL = {};
         static constexpr bitfield_t<DKCFGR2_t, 28> SDMMCSEL = {};
+        using reg_t<uint32_t, base_address + 144>::operator=;
     } DKCFGR2 = {};
 };
 

@@ -13,6 +13,17 @@ void set(reg_t reg, bitfield_t... bitfields)
 
 }
 
+template <typename T>
+struct bitfield_value_t
+{
+    T value;
+    T mask;
+    friend inline constexpr auto operator|(const bitfield_value_t& lhs, const bitfield_value_t& rhs)
+    {
+        return bitfield_value_t<T>{lhs.value | rhs.value, lhs.mask|rhs.mask};
+    }
+};
+
 template <typename T, const uint32_t address>
 struct reg_t
 {
@@ -25,6 +36,13 @@ struct reg_t
     inline constexpr reg_t operator=(const T& value) const noexcept
     {
         reg_t::value() = value;
+        return reg_t<T,address>{};
+    }
+
+    template<typename U>
+    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, U::mask, std::declval<reg_t<T,address>>())
+    {
+        reg_t::value() = (reg_t::value() & ~bit_field_value.mask) | bit_field_value.value;
         return reg_t<T,address>{};
     }
 
@@ -56,14 +74,14 @@ struct bitfield_t
     static constexpr const int stop = stop_index;
     static constexpr const typename reg_t::type mask = details::compute_mask<typename reg_t::type, start, stop>();
 
-    static constexpr type shift(const value_t value) noexcept
+    static constexpr bitfield_value_t<type> shift(const value_t value) noexcept
     {
-        return (static_cast<type>(value)<<start) & mask;
+        return {(static_cast<type>(value)<<start) & mask, mask};
     }
 
     inline constexpr bitfield_t operator=(const value_t& value) const noexcept
     {
-        typename reg_t::type tmp = shift(value);
+        typename reg_t::type tmp = shift(value).value;
         reg_t::value() = (reg_t::value() &  ~mask)|tmp;
         return bitfield_t<reg_t,start_index,stop_index,value_t>{};
     }

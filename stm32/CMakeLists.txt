@@ -65,6 +65,7 @@ ram_usage(empty)
 
 add_executable(register_meta "Src/register_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_meta "Src/bitfield_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(bitfield_or_meta "Src/bitfield_or_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 ram_usage(bitfield_meta)
 
 add_executable(register_c_like "Src/register_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
