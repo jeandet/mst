@@ -4,6 +4,15 @@
 #include <tuple>
 
 namespace ucpp::registers {
+
+template<typename reg_t, typename ...bitfield_t>
+void set(reg_t reg, bitfield_t... bitfields)
+{
+    // TODO find a way to set many fields at once
+    //static_assert((std::is_same_v<reg_t,decltype (bitfields)> & ...),"");
+
+}
+
 template <typename T, const uint32_t address>
 struct reg_t
 {
@@ -38,17 +47,23 @@ namespace details {
     }
 }
 
-template <typename reg_t, int start_index, int stop_index=start_index, typename value_t=int>
+template <typename reg_type, int start_index, int stop_index=start_index, typename value_t=int>
 struct bitfield_t
 {
+    using reg_t = reg_type;
     using type = typename reg_t::type;
     static constexpr const int start = start_index;
     static constexpr const int stop = stop_index;
     static constexpr const typename reg_t::type mask = details::compute_mask<typename reg_t::type, start, stop>();
 
+    static constexpr type shift(const value_t value) noexcept
+    {
+        return (static_cast<type>(value)<<start) & mask;
+    }
+
     inline constexpr bitfield_t operator=(const value_t& value) const noexcept
     {
-        typename reg_t::type tmp = ((static_cast<int>(value)<<start) & mask);
+        typename reg_t::type tmp = shift(value);
         reg_t::value() = (reg_t::value() &  ~mask)|tmp;
         return bitfield_t<reg_t,start_index,stop_index,value_t>{};
     }
@@ -78,20 +93,23 @@ struct bitfield_array_t
 {
     static constexpr const typename reg_t::type field_mask = details::compute_mask<typename reg_t::type, start_index, start_index + width-1>();
     static constexpr const typename reg_t::type mask = details::compute_mask<typename reg_t::type, start_index, start_index + (width*count)-1>();
+
+    template<std::size_t i>
+    using field_t = bitfield_t<reg_t, (i*width)+start_index, ((i+1)*width)+start_index-1, value_t>;
+
     template<std::size_t i>
     static constexpr auto get() noexcept
     {
         static_assert ((i>=0)and(i<count), "Bitfield index is out of bounds");
-        return bitfield_t<reg_t, (i*width)+start_index, ((i+1)*width)+start_index-1, value_t>{};
+        return field_t<i>{};
     }
 
     template<typename T>
     inline constexpr bitfield_array_t operator=(const T& value) const noexcept
     {
-        constexpr bool might_be_enum_class = std::conjunction_v<std::is_same<value_t,T>,std::negation<std::is_integral<T>>>;
         if constexpr(std::is_integral_v<T>)
             reg_t::value() = mask & (value << start_index);
-        else if constexpr(might_be_enum_class)
+        else if constexpr(std::conjunction_v<std::is_enum<T>, std::is_same<T,value_t>>)
         {
             auto v = bitfield_cat<count-1>(static_cast<unsigned long long>(value), width);
             reg_t::value() = mask & (v << start_index);

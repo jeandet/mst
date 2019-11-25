@@ -19,6 +19,15 @@ function(compare_asm target1 target2)
     add_test(NAME "cmp_${target1}_${target2}" COMMAND diff --side-by-side ${asm1} ${asm2})
 endfunction()
 
+function(ram_usage target)
+    add_custom_target(ram_usage_${target}
+        ALL
+        COMMAND arm-none-eabi-size $<TARGET_FILE:${target}>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${target}
+        )
+endfunction()
+
 
 set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
@@ -49,9 +58,14 @@ set (CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m7 -flto -Wl,--gc-sections -mfpu=fpv5-
 file(GLOB_RECURSE SD_TESTS_SOURCES "Src/main.cpp")
 
 add_executable(sd_tests ${SD_TESTS_SOURCES} ${SYSTEM_SRC} ${LINKER_SCRIPT})
+ram_usage(sd_tests)
+
+add_executable(empty Src/empty.cpp ${SYSTEM_SRC} ${LINKER_SCRIPT})
+ram_usage(empty)
 
 add_executable(register_meta "Src/register_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_meta "Src/bitfield_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+ram_usage(bitfield_meta)
 
 add_executable(register_c_like "Src/register_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_c_like "Src/bitfield_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})

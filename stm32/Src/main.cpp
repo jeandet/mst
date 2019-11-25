@@ -17,7 +17,7 @@
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
-#include <iostream>
+//#include <iostream> // <- beware this kills kittens
 volatile int card_detect;
 using namespace ucpp::stm32;
 
@@ -95,6 +95,6 @@ int main(void)
         card_detect = stm32f7.GPIOC.id.get<13>();
         stm32f7.GPIOK.od.get<3>() = stm32f7.GPIOC.id.get<13>();
         int v = stm32f7.GPIOK.id; // check that int() is working
-        stm32f7.GPIOK.od = 10;
+        // stm32f7.GPIOK.od = 10;
     }
 }
