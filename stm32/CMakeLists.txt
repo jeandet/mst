@@ -21,7 +21,7 @@ SET(CMAKE_OBJDUMP arm-none-eabi-objdump)
 
 SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F746NGHX_FLASH.ld)
 
-SET(OPTIM_LEVEL "-O0")
+SET(OPTIM_LEVEL "-O1")
 SET(CPP_STANDARD "gnu++17")
 
 SET(CMAKE_CXX_FLAGS "${OPTIM_LEVEL} -mcpu=cortex-m7 -flto -std=${CPP_STANDARD} -g3 -DSTM32 -DSTM32F746NGHx -DSTM32F746G_DISCO -DSTM32F7 -DDEBUG -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -Wall -fstack-usage --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard")
@@ -32,8 +32,14 @@ set (CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m7 -flto -Wl,--gc-sections -mfpu=fpv5-
 file(GLOB_RECURSE SD_TESTS_SOURCES "Src/main.cpp")
 
 add_executable(sd_tests ${SD_TESTS_SOURCES} ${SYSTEM_SRC} ${LINKER_SCRIPT})
+
 add_executable(register_meta "Src/register_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(bitfield_meta "Src/bitfield_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+
 add_executable(register_c_like "Src/register_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(bitfield_c_like "Src/bitfield_c_like.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+#gdb -batch -ex 'file ../../build/build-stm32-arm_none_eabi_gcc-Debug/bitfield_meta' -ex 'disassemble main'
+
 #set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
 

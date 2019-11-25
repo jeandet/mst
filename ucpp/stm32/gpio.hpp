@@ -11,7 +11,7 @@ enum class mode
     input = 0,
     output = 1,
     alternate_function = 2,
-    analogue
+    analogue = 3
 };
 enum class speed{
     low = 0,
