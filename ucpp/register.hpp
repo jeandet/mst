@@ -58,6 +58,18 @@ struct reg_t
         return reg_t<T,address>{};
     }
 
+    inline constexpr reg_t operator|=(const T& value) const noexcept
+    {
+        reg_t::value() |= value;
+        return reg_t<T,address>{};
+    }
+
+    inline constexpr reg_t operator&=(const T& value) const noexcept
+    {
+        reg_t::value() &= value;
+        return reg_t<T,address>{};
+    }
+
     constexpr operator volatile T&() noexcept { return value(); }
     constexpr operator const volatile T&() const noexcept { return *reinterpret_cast<volatile T*>(address); }
 };
@@ -82,8 +94,8 @@ struct bitfield_t
 {
     using reg_t = reg_type;
     using type = typename reg_t::type;
-    static constexpr const int start = start_index;
-    static constexpr const int stop = stop_index;
+    static constexpr const int start = std::min(start_index, stop_index);
+    static constexpr const int stop = std::max(start_index, stop_index);
     static constexpr const typename reg_t::type mask = details::compute_mask<typename reg_t::type, start, stop>();
 
     static constexpr bitfield_value_t<type> shift(const value_t value) noexcept

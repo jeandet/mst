@@ -64,6 +64,12 @@ auto speed_field(const gpio_t& gpio)
     return gpio.speedr.template get<index>();
 }
 
+template<std::size_t index, typename gpio_t>
+auto output_type_field(const gpio_t& gpio)
+{
+    return gpio.output_typer.template get<index>();
+}
+
 template<uint32_t base_address, int peripheral_index>
 struct Gpio
 {

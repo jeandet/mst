@@ -18,6 +18,8 @@ struct sdmmc_t
     {
         static constexpr bitfield_t<POWER_t, 0, 1> PWRCTRL = {};
         using reg_t<uint32_t, base_address + 0>::operator=;
+        using reg_t<uint32_t, base_address + 0>::operator|=;
+        using reg_t<uint32_t, base_address + 0>::operator&=;
     } POWER = {};
     static constexpr struct CLKCR_t : reg_t<uint32_t, base_address + 4>
     {
@@ -29,6 +31,8 @@ struct sdmmc_t
         static constexpr bitfield_t<CLKCR_t, 8> CLKEN = {};
         static constexpr bitfield_t<CLKCR_t, 0, 7> CLKDIV = {};
         using reg_t<uint32_t, base_address + 4>::operator=;
+        using reg_t<uint32_t, base_address + 4>::operator|=;
+        using reg_t<uint32_t, base_address + 4>::operator&=;
     } CLKCR = {};
     static constexpr reg_t<uint32_t, base_address + 8> ARG = {};
     static constexpr struct CMD_t : reg_t<uint32_t, base_address + 12>
@@ -43,11 +47,15 @@ struct sdmmc_t
         static constexpr bitfield_t<CMD_t, 6, 7> WAITRESP = {};
         static constexpr bitfield_t<CMD_t, 0, 5> CMDINDEX = {};
         using reg_t<uint32_t, base_address + 12>::operator=;
+        using reg_t<uint32_t, base_address + 12>::operator|=;
+        using reg_t<uint32_t, base_address + 12>::operator&=;
     } CMD = {};
     static constexpr struct RESPCMD_t : reg_t<uint32_t, base_address + 16>
     {
         static constexpr bitfield_t<RESPCMD_t, 0, 5> RESPCMD = {};
         using reg_t<uint32_t, base_address + 16>::operator=;
+        using reg_t<uint32_t, base_address + 16>::operator|=;
+        using reg_t<uint32_t, base_address + 16>::operator&=;
     } RESPCMD = {};
     static constexpr reg_t<uint32_t, base_address + 20> RESP1 = {};
     static constexpr reg_t<uint32_t, base_address + 24> RESP2 = {};
@@ -58,6 +66,8 @@ struct sdmmc_t
     {
         static constexpr bitfield_t<DLEN_t, 0, 24> DATALENGTH = {};
         using reg_t<uint32_t, base_address + 40>::operator=;
+        using reg_t<uint32_t, base_address + 40>::operator|=;
+        using reg_t<uint32_t, base_address + 40>::operator&=;
     } DLEN = {};
     static constexpr struct DCTRL_t : reg_t<uint32_t, base_address + 44>
     {
@@ -71,11 +81,15 @@ struct sdmmc_t
         static constexpr bitfield_t<DCTRL_t, 1> DTDIR = {};
         static constexpr bitfield_t<DCTRL_t, 0> DTEN = {};
         using reg_t<uint32_t, base_address + 44>::operator=;
+        using reg_t<uint32_t, base_address + 44>::operator|=;
+        using reg_t<uint32_t, base_address + 44>::operator&=;
     } DCTRL = {};
     static constexpr struct DCOUNT_t : reg_t<uint32_t, base_address + 48>
     {
         static constexpr bitfield_t<DCOUNT_t, 0, 24> DATACOUNT = {};
         using reg_t<uint32_t, base_address + 48>::operator=;
+        using reg_t<uint32_t, base_address + 48>::operator|=;
+        using reg_t<uint32_t, base_address + 48>::operator&=;
     } DCOUNT = {};
     static constexpr struct STA_t : reg_t<uint32_t, base_address + 52>
     {
@@ -104,6 +118,8 @@ struct sdmmc_t
         static constexpr bitfield_t<STA_t, 1> DCRCFAIL = {};
         static constexpr bitfield_t<STA_t, 0> CCRCFAIL = {};
         using reg_t<uint32_t, base_address + 52>::operator=;
+        using reg_t<uint32_t, base_address + 52>::operator|=;
+        using reg_t<uint32_t, base_address + 52>::operator&=;
     } STA = {};
     static constexpr struct ICR_t : reg_t<uint32_t, base_address + 56>
     {
@@ -121,6 +137,8 @@ struct sdmmc_t
         static constexpr bitfield_t<ICR_t, 1> DCRCFAILC = {};
         static constexpr bitfield_t<ICR_t, 0> CCRCFAILC = {};
         using reg_t<uint32_t, base_address + 56>::operator=;
+        using reg_t<uint32_t, base_address + 56>::operator|=;
+        using reg_t<uint32_t, base_address + 56>::operator&=;
     } ICR = {};
     static constexpr struct MASK_t : reg_t<uint32_t, base_address + 60>
     {
@@ -149,11 +167,15 @@ struct sdmmc_t
         static constexpr bitfield_t<MASK_t, 1> DCRCFAILIE = {};
         static constexpr bitfield_t<MASK_t, 0> CCRCFAILIE = {};
         using reg_t<uint32_t, base_address + 60>::operator=;
+        using reg_t<uint32_t, base_address + 60>::operator|=;
+        using reg_t<uint32_t, base_address + 60>::operator&=;
     } MASK = {};
     static constexpr struct FIFOCNT_t : reg_t<uint32_t, base_address + 72>
     {
         static constexpr bitfield_t<FIFOCNT_t, 0, 23> FIFOCOUNT = {};
         using reg_t<uint32_t, base_address + 72>::operator=;
+        using reg_t<uint32_t, base_address + 72>::operator|=;
+        using reg_t<uint32_t, base_address + 72>::operator&=;
     } FIFOCNT = {};
     static constexpr reg_t<uint32_t, base_address + 128> FIFO = {};
 };

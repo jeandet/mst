@@ -43,6 +43,13 @@ auto& clk_enable_bit(const rcc_t& rcc, const device_t&,
     return rcc.APB2ENR.SDMMC1EN;
 }
 
+template <typename rcc_t, typename device_t>
+auto& reset_bit(const rcc_t& rcc, const device_t&,
+    typename std::enable_if_t<is_sdmmc_v<device_t>>* = 0)
+{
+    return rcc.APB2RSTR.SDMMC1RST;
+}
+
 }
 
 using namespace ucpp::registers;
@@ -52,5 +59,11 @@ template <typename rcc_type, typename device_t>
 void enable_clock(const rcc_type& rccdev, const device_t& device, bool state = true)
 {
     clk_enable_bit(rccdev, device) = state;
+}
+
+template <typename rcc_type, typename device_t>
+void reset(const rcc_type& rccdev, const device_t& device, bool state = true)
+{
+    reset_bit(rccdev, device) = state;
 }
 }

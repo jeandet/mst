@@ -108,9 +108,30 @@ TEST_CASE("left aligned bitfield", "[bitfield]")
     }
 }
 
-TEST_CASE("centered bitfield", "[bitfield]")
+TEST_CASE("left aligned bitfield with reversed indexes", "[bitfield]")
 {
     using reg = reg_mock<3>;
+    ucpp::registers::bitfield_t<reg, 31, 24> field;
+    SECTION("Can set int")
+    {
+        field = 0xff;
+        REQUIRE(field == 0xff);
+        REQUIRE(reg::p_value == 0xff000000);
+        field = 0;
+        REQUIRE(field == 0);
+        REQUIRE(reg::p_value == 0);
+    }
+    SECTION("Masks too big integer")
+    {
+        field = 0x123;
+        REQUIRE(field == 0x23);
+        REQUIRE(reg::p_value == 0x23000000);
+    }
+}
+
+TEST_CASE("centered bitfield", "[bitfield]")
+{
+    using reg = reg_mock<4>;
     ucpp::registers::bitfield_t<reg, 8, 23> field;
     SECTION("Can set int")
     {
@@ -132,7 +153,7 @@ TEST_CASE("centered bitfield", "[bitfield]")
 
 TEST_CASE("bitfield_array", "[bitfield_array]")
 {
-    using reg = reg_mock<4>;
+    using reg = reg_mock<5>;
     using field_t = ucpp::registers::bitfield_array_t<8, 1, reg, 16, field_values>;
     field_t fields;
     SECTION("Can set int")
@@ -175,13 +196,13 @@ TEST_CASE("bitfield_array", "[bitfield_array]")
 TEST_CASE("Set several bit fields at once", "[bitfield]")
 {
     using namespace ucpp::registers;
-    struct my_reg_t : reg_mock<5>
+    struct my_reg_t : reg_mock<6>
     {
-        bitfield_t<reg_mock<5>, 0, 3> field1;
-        bitfield_t<reg_mock<5>, 4, 7> field2;
-        bitfield_t<reg_mock<5>, 8, 31> field3;
-        using reg_mock<5>::operator=;
-        using reg_mock<5>::operator|=;
+        bitfield_t<reg_mock<6>, 0, 3> field1;
+        bitfield_t<reg_mock<6>, 4, 7> field2;
+        bitfield_t<reg_mock<6>, 8, 31> field3;
+        using reg_mock<6>::operator=;
+        using reg_mock<6>::operator|=;
     } my_reg = {};
     SECTION("Can set register with bit field combination")
     {

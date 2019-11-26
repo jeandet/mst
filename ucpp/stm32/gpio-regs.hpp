@@ -33,6 +33,8 @@ struct gpio_t
         static constexpr bitfield_t<MODER_t, 2, 3> MODER1 = {};
         static constexpr bitfield_t<MODER_t, 0, 1> MODER0 = {};
         using reg_t<uint32_t, base_address + 0>::operator=;
+        using reg_t<uint32_t, base_address + 0>::operator|=;
+        using reg_t<uint32_t, base_address + 0>::operator&=;
     } MODER = {};
     static constexpr struct OTYPER_t : reg_t<uint32_t, base_address + 4>
     {
@@ -53,6 +55,8 @@ struct gpio_t
         static constexpr bitfield_t<OTYPER_t, 1> OT1 = {};
         static constexpr bitfield_t<OTYPER_t, 0> OT0 = {};
         using reg_t<uint32_t, base_address + 4>::operator=;
+        using reg_t<uint32_t, base_address + 4>::operator|=;
+        using reg_t<uint32_t, base_address + 4>::operator&=;
     } OTYPER = {};
     static constexpr struct GPIOB_OSPEEDR_t : reg_t<uint32_t, base_address + 8>
     {
@@ -73,6 +77,8 @@ struct gpio_t
         static constexpr bitfield_t<GPIOB_OSPEEDR_t, 2, 3> OSPEEDR1 = {};
         static constexpr bitfield_t<GPIOB_OSPEEDR_t, 0, 1> OSPEEDR0 = {};
         using reg_t<uint32_t, base_address + 8>::operator=;
+        using reg_t<uint32_t, base_address + 8>::operator|=;
+        using reg_t<uint32_t, base_address + 8>::operator&=;
     } GPIOB_OSPEEDR = {};
     static constexpr struct PUPDR_t : reg_t<uint32_t, base_address + 12>
     {
@@ -93,6 +99,8 @@ struct gpio_t
         static constexpr bitfield_t<PUPDR_t, 2, 3> PUPDR1 = {};
         static constexpr bitfield_t<PUPDR_t, 0, 1> PUPDR0 = {};
         using reg_t<uint32_t, base_address + 12>::operator=;
+        using reg_t<uint32_t, base_address + 12>::operator|=;
+        using reg_t<uint32_t, base_address + 12>::operator&=;
     } PUPDR = {};
     static constexpr struct IDR_t : reg_t<uint32_t, base_address + 16>
     {
@@ -113,6 +121,8 @@ struct gpio_t
         static constexpr bitfield_t<IDR_t, 1> IDR1 = {};
         static constexpr bitfield_t<IDR_t, 0> IDR0 = {};
         using reg_t<uint32_t, base_address + 16>::operator=;
+        using reg_t<uint32_t, base_address + 16>::operator|=;
+        using reg_t<uint32_t, base_address + 16>::operator&=;
     } IDR = {};
     static constexpr struct ODR_t : reg_t<uint32_t, base_address + 20>
     {
@@ -133,6 +143,8 @@ struct gpio_t
         static constexpr bitfield_t<ODR_t, 1> ODR1 = {};
         static constexpr bitfield_t<ODR_t, 0> ODR0 = {};
         using reg_t<uint32_t, base_address + 20>::operator=;
+        using reg_t<uint32_t, base_address + 20>::operator|=;
+        using reg_t<uint32_t, base_address + 20>::operator&=;
     } ODR = {};
     static constexpr struct BSRR_t : reg_t<uint32_t, base_address + 24>
     {
@@ -169,6 +181,8 @@ struct gpio_t
         static constexpr bitfield_t<BSRR_t, 1> BS1 = {};
         static constexpr bitfield_t<BSRR_t, 0> BS0 = {};
         using reg_t<uint32_t, base_address + 24>::operator=;
+        using reg_t<uint32_t, base_address + 24>::operator|=;
+        using reg_t<uint32_t, base_address + 24>::operator&=;
     } BSRR = {};
     static constexpr struct LCKR_t : reg_t<uint32_t, base_address + 28>
     {
@@ -190,6 +204,8 @@ struct gpio_t
         static constexpr bitfield_t<LCKR_t, 1> LCK1 = {};
         static constexpr bitfield_t<LCKR_t, 0> LCK0 = {};
         using reg_t<uint32_t, base_address + 28>::operator=;
+        using reg_t<uint32_t, base_address + 28>::operator|=;
+        using reg_t<uint32_t, base_address + 28>::operator&=;
     } LCKR = {};
     static constexpr struct AFRL_t : reg_t<uint32_t, base_address + 32>
     {
@@ -202,6 +218,8 @@ struct gpio_t
         static constexpr bitfield_t<AFRL_t, 4, 7> AFRL1 = {};
         static constexpr bitfield_t<AFRL_t, 0, 3> AFRL0 = {};
         using reg_t<uint32_t, base_address + 32>::operator=;
+        using reg_t<uint32_t, base_address + 32>::operator|=;
+        using reg_t<uint32_t, base_address + 32>::operator&=;
     } AFRL = {};
     static constexpr struct AFRH_t : reg_t<uint32_t, base_address + 36>
     {
@@ -214,6 +232,8 @@ struct gpio_t
         static constexpr bitfield_t<AFRH_t, 4, 7> AFRH9 = {};
         static constexpr bitfield_t<AFRH_t, 0, 3> AFRH8 = {};
         using reg_t<uint32_t, base_address + 36>::operator=;
+        using reg_t<uint32_t, base_address + 36>::operator|=;
+        using reg_t<uint32_t, base_address + 36>::operator&=;
     } AFRH = {};
     static constexpr struct BRR_t : reg_t<uint32_t, base_address + 40>
     {
@@ -234,6 +254,8 @@ struct gpio_t
         static constexpr bitfield_t<BRR_t, 14> BR14 = {};
         static constexpr bitfield_t<BRR_t, 15> BR15 = {};
         using reg_t<uint32_t, base_address + 40>::operator=;
+        using reg_t<uint32_t, base_address + 40>::operator|=;
+        using reg_t<uint32_t, base_address + 40>::operator&=;
     } BRR = {};
 };
 

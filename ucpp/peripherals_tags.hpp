@@ -25,6 +25,8 @@ DECLARE_DEVICE(uart)
 DECLARE_DEVICE(gpio)
 DECLARE_DEVICE(sdmmc)
 
+DECLARE_DEVICE(apb_bus)
+
 }
 
 
