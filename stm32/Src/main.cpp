@@ -35,6 +35,7 @@ inline void _setup_sd_io(gpio_t& gpio)
     alternate_function_field<I>(gpio) = alternate_function::af12;
     mode_field<I>(gpio) = mode::alternate_function;
     speed_field<I>(gpio) = gpio::speed::very_high;
+    output_type_field<I>(gpio) = gpio::output_type::push_pull;
 }
 
 template <typename gpio_t, int... I>
@@ -43,28 +44,38 @@ inline void setup_sd_all_io(gpio_t& gpio)
     (_setup_sd_io<gpio_t, I>(gpio), ...);
 }
 
+inline void reset_sd()
+{
+    rcc::reset(stm32f7.rcc, stm32f7.sdmmc, true);
+    for (volatile int i = 0; i < 4; i++)
+        ;
+    rcc::reset(stm32f7.rcc, stm32f7.sdmmc, false);
+}
 inline void setup_sd_io()
 {
+    reset_sd();
     setup_sd_all_io<decltype(stm32f7.GPIOC), 8, 9, 10, 11, 12>(stm32f7.GPIOC);
     setup_sd_all_io<decltype(stm32f7.GPIOD), 2>(stm32f7.GPIOD);
+    using CLKCR = decltype(stm32f7.sdmmc.CLKCR);
+    stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
-    stm32f7.sdmmc.CLKCR.CLKDIV = 40;
-    stm32f7.sdmmc.CLKCR.WIDBUS = 1;
+    stm32f7.sdmmc.CLKCR = CLKCR::CLKDIV.shift(40);
     stm32f7.sdmmc.POWER.PWRCTRL = 3;
+    stm32f7.sdmmc.CLKCR |= CLKCR::CLKEN.shift(1);
+    for (volatile int i = 0; i < 1024 * 16; i++)
+        ;
 }
 
 inline void send_cmd(int cmd, int argument = 0)
 {
-    // sdmmc_cmdinit.Argument         = 0;
-    // sdmmc_cmdinit.CmdIndex         = SDMMC_CMD_ALL_SEND_CID;
-    // sdmmc_cmdinit.Response         = SDMMC_RESPONSE_LONG;
-    // sdmmc_cmdinit.WaitForInterrupt = SDMMC_WAIT_NO;
-    // sdmmc_cmdinit.CPSM             = SDMMC_CPSM_ENABLE;
-    // set arg
+    stm32f7.sdmmc.ICR |= 0x1ff;
+    int stat = stm32f7.sdmmc.STA;
     stm32f7.sdmmc.ARG = argument;
-    // set CMD
-    using CMD=decltype (stm32f7.sdmmc.CMD) ;
-    stm32f7.sdmmc.CMD = CMD::CPSMEN.shift(1) | CMD::WAITRESP.shift(1) |CMD::CMDINDEX.shift(cmd);
+    using CMD = decltype(stm32f7.sdmmc.CMD);
+    int v = (CMD::CPSMEN.shift(1) | CMD::WAITRESP.shift(3) | CMD::CMDINDEX.shift(cmd)).value;
+    stm32f7.sdmmc.CMD = v;
+    while (!stm32f7.sdmmc.STA.CMDREND or !stm32f7.sdmmc.STA.CTIMEOUT)
+        ;
 }
 
 int main(void)
