@@ -16,6 +16,14 @@ struct reg_mock
         return reg_mock<address> {};
     }
 
+    template <typename U>
+    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype(
+        std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())
+    {
+        reg_mock::value() = (reg_mock::value() & ~bit_field_value.mask) | bit_field_value.value;
+        return reg_mock<address, T> {};
+    }
+
     constexpr operator volatile type&() noexcept { return value(); }
     constexpr operator const volatile type&() const noexcept { return p_value; }
 };
@@ -153,4 +161,23 @@ TEST_CASE("bitfield_array", "[bitfield_array]")
         REQUIRE(fields == 0xffff);
         REQUIRE(reg::p_value == 0x00ffff00);
     }
+}
+
+
+TEST_CASE("Set several bit fields at once", "[bitfield]")
+{
+    using namespace ucpp::registers;
+    struct my_reg_t : reg_mock<5>
+    {
+        bitfield_t<reg_mock<5>, 0, 3> field1;
+        bitfield_t<reg_mock<5>, 4, 7> field2;
+        bitfield_t<reg_mock<5>, 8, 31> field3;
+        using reg_mock<5>::operator=;
+    } my_reg = {};
+
+    my_reg = my_reg.field1.shift(2) | my_reg.field2.shift(0xf) | my_reg.field3.shift(0xA5ff5A);
+    REQUIRE(my_reg.field1 == 2);
+    REQUIRE(my_reg.field2 == 0xf);
+    REQUIRE(my_reg.field3 == 0xA5ff5A);
+    REQUIRE(my_reg == 0xA5ff5AF2);
 }

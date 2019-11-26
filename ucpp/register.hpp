@@ -40,7 +40,7 @@ struct reg_t
     }
 
     template<typename U>
-    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, U::mask, std::declval<reg_t<T,address>>())
+    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
     {
         reg_t::value() = (reg_t::value() & ~bit_field_value.mask) | bit_field_value.value;
         return reg_t<T,address>{};
