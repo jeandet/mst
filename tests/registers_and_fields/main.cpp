@@ -20,6 +20,14 @@ struct reg_mock
     inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype(
         std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())
     {
+        reg_mock::value() = bit_field_value.value;
+        return reg_mock<address, T> {};
+    }
+
+    template <typename U>
+    inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> decltype(
+        std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())
+    {
         reg_mock::value() = (reg_mock::value() & ~bit_field_value.mask) | bit_field_value.value;
         return reg_mock<address, T> {};
     }
@@ -173,11 +181,25 @@ TEST_CASE("Set several bit fields at once", "[bitfield]")
         bitfield_t<reg_mock<5>, 4, 7> field2;
         bitfield_t<reg_mock<5>, 8, 31> field3;
         using reg_mock<5>::operator=;
+        using reg_mock<5>::operator|=;
     } my_reg = {};
-
-    my_reg = my_reg.field1.shift(2) | my_reg.field2.shift(0xf) | my_reg.field3.shift(0xA5ff5A);
-    REQUIRE(my_reg.field1 == 2);
-    REQUIRE(my_reg.field2 == 0xf);
-    REQUIRE(my_reg.field3 == 0xA5ff5A);
-    REQUIRE(my_reg == 0xA5ff5AF2);
+    SECTION("Can set register with bit field combination")
+    {
+        my_reg = my_reg.field1.shift(2) | my_reg.field2.shift(0xf) | my_reg.field3.shift(0xA5ff5A);
+        REQUIRE(my_reg.field1 == 2);
+        REQUIRE(my_reg.field2 == 0xf);
+        REQUIRE(my_reg.field3 == 0xA5ff5A);
+        REQUIRE(my_reg == 0xA5ff5AF2);
+    }
+    SECTION("Can set several fields at once")
+    {
+        my_reg = 0;
+        my_reg |= my_reg.field2.shift(0xf);
+        REQUIRE(my_reg == 0x0F0);
+        REQUIRE(my_reg.field2 == 0xf);
+        my_reg |= my_reg.field1.shift(2) | my_reg.field3.shift(0xA5ff5A);
+        REQUIRE(my_reg.field1 == 2);
+        REQUIRE(my_reg.field3 == 0xA5ff5A);
+        REQUIRE(my_reg == 0xA5ff5AF2);
+    }
 }

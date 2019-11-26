@@ -22,6 +22,11 @@ struct bitfield_value_t
     {
         return bitfield_value_t<T>{lhs.value | rhs.value, lhs.mask|rhs.mask};
     }
+
+    friend inline constexpr auto operator|(int lhs, const bitfield_value_t& rhs)
+    {
+        return lhs | rhs.value;
+    }
 };
 
 template <typename T, const uint32_t address>
@@ -41,6 +46,13 @@ struct reg_t
 
     template<typename U>
     inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
+    {
+        reg_t::value() = bit_field_value.value;
+        return reg_t<T,address>{};
+    }
+
+    template<typename U>
+    inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
     {
         reg_t::value() = (reg_t::value() & ~bit_field_value.mask) | bit_field_value.value;
         return reg_t<T,address>{};
