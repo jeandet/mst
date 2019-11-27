@@ -17,6 +17,7 @@
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
+#include <optional>
 //#include <iostream> // <- beware this kills kittens
 volatile int card_detect;
 using namespace ucpp::stm32;
@@ -59,63 +60,146 @@ inline void setup_sd_io()
     using CLKCR = decltype(stm32f7.sdmmc.CLKCR);
     stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
-    stm32f7.sdmmc.CLKCR = CLKCR::CLKDIV.shift(40);
+    stm32f7.sdmmc.CLKCR
+        = CLKCR::CLKDIV.shift((16 * 1000 * 1000) / (400 * 1000) - 2) | CLKCR::WIDBUS.shift(1);
     stm32f7.sdmmc.POWER.PWRCTRL = 3;
     stm32f7.sdmmc.CLKCR |= CLKCR::CLKEN.shift(1);
     for (volatile int i = 0; i < 1024 * 16; i++)
         ;
 }
 
-inline void send_cmd(int cmd, int argument = 0)
+namespace
 {
-    stm32f7.sdmmc.ICR |= 0x1ff;
-    int stat = stm32f7.sdmmc.STA;
-    stm32f7.sdmmc.ARG = argument;
-    using CMD = decltype(stm32f7.sdmmc.CMD);
-    int v = (CMD::CPSMEN.shift(1) | CMD::WAITRESP.shift(3) | CMD::CMDINDEX.shift(cmd)).value;
-    stm32f7.sdmmc.CMD = v;
-    while (!stm32f7.sdmmc.STA.CMDREND or !stm32f7.sdmmc.STA.CTIMEOUT)
-        ;
-}
 
-template<int cmd_index>
-inline auto sd_send_cmd(uint32_t argument = 0)
+struct sd_no_response
 {
-    stm32f7.sdmmc.ICR |= 0x1ff;
-    using ICR = decltype (stm32f7.sdmmc.ICR);
-    using CMD = decltype (stm32f7.sdmmc.CMD);
-    stm32f7.sdmmc.ICR |= ICR::CMDRENDC.shift(1) | ICR::CTIMEOUTC.shift(1);
-    stm32f7.sdmmc.ARG = argument;
-    auto cmd = CMD::CPSMEN.shift(1) | CMD::CMDINDEX.shift(cmd_index);
-    // 128 bits response
-    if constexpr(cmd_index == 2 or cmd_index == 7 or cmd_index == 9 or cmd_index == 10)
+};
+struct sd_short_response
+{
+    uint32_t value;
+};
+struct sd_long_response
+{
+    uint32_t value[4];
+};
+
+enum class response_type_t
+{
+    no_resp,
+    short_resp,
+    long_resp
+};
+
+template <int CMD, typename resp_t, bool is_application_specific = false>
+struct SD_CMD
+{
+    static inline constexpr int index = CMD;
+    using response_type = resp_t;
+    static inline constexpr bool application_specific = is_application_specific;
+};
+
+using CMD0 = SD_CMD<0, sd_no_response>;
+using CMD8 = SD_CMD<8, sd_short_response>;
+using CMD55 = SD_CMD<55, sd_short_response>;
+using ACMD41 = SD_CMD<41, sd_short_response, true>;
+
+template <typename response_t, typename T>
+inline constexpr auto read_response(const T& sdmmc)
+{
+    if constexpr (std::is_same_v<response_t, sd_no_response>)
     {
-        cmd = cmd | CMD::WAITRESP.shift(3);
-    }
-    // no resp
-    else if constexpr (cmd_index == 0)
-    {
-        cmd = cmd | CMD::WAITRESP.shift(0);
-    }
-    // 48 bits response
-    else
-    {
-        cmd = cmd | CMD::WAITRESP.shift(1);
-    }
-    stm32f7.sdmmc.CMD = cmd;
-    if constexpr(cmd_index !=0)
-    {
-        while (!(stm32f7.sdmmc.STA.CMDREND or stm32f7.sdmmc.STA.CTIMEOUT))
-        {
-            int sta = stm32f7.sdmmc.STA;
-            sta = stm32f7.sdmmc.STA;
-        }
-        if(stm32f7.sdmmc.STA.CTIMEOUT)
-            return false;
         return true;
     }
-    while (!stm32f7.sdmmc.STA.CMDSENT);
-    return true;
+    else if constexpr (std::is_same_v<response_t, sd_short_response>)
+    {
+        return std::optional<sd_short_response> { sd_short_response { uint32_t(sdmmc.RESP1) } };
+    }
+    else if constexpr (std::is_same_v<response_t, sd_long_response>)
+    {
+        return std::optional<sd_long_response> { sd_long_response {
+            sdmmc.RESP1, sdmmc.RESP2, sdmmc.RESP3, sdmmc.RESP4 } };
+    }
+}
+template <typename response_type>
+inline constexpr int WAITRESP_v()
+{
+    if constexpr (std::is_same_v<response_type, sd_no_response>)
+        return 0;
+    if constexpr (std::is_same_v<response_type, sd_short_response>)
+        return 1;
+    if constexpr (std::is_same_v<response_type, sd_long_response>)
+        return 3;
+}
+
+template <typename CMD>
+inline constexpr auto sd_send_cmd_impl(uint32_t argument)
+{
+    volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
+    using ICR = decltype(stm32f7.sdmmc.ICR);
+    using cmd_reg = decltype(stm32f7.sdmmc.CMD);
+    stm32f7.sdmmc.ICR |= ICR::CMDRENDC.shift(1) | ICR::CTIMEOUTC.shift(1) | ICR::CMDSENTC.shift(1);
+    stm32f7.sdmmc.ARG = argument;
+    stm32f7.sdmmc.CMD |= cmd_reg::CPSMEN.shift(1) | cmd_reg::CMDINDEX.shift(CMD::index)
+        | cmd_reg::WAITRESP.shift(WAITRESP_v<typename CMD::response_type>());
+    while (1)
+    {
+        if constexpr (std::is_same_v<typename CMD::response_type, sd_no_response>)
+        {
+            if (stm32f7.sdmmc.STA.CMDSENT)
+                return read_response<typename CMD::response_type>(stm32f7.sdmmc);
+        }
+        else
+        {
+            if (stm32f7.sdmmc.STA.CMDREND)
+            {
+                return read_response<typename CMD::response_type>(stm32f7.sdmmc);
+            }
+            if (stm32f7.sdmmc.STA.CTIMEOUT)
+            {
+                return std::optional<typename CMD::response_type> { std::nullopt };
+            }
+        }
+    }
+}
+}
+
+template <typename CMD>
+inline constexpr auto sd_send_cmd(uint32_t argument = 0)
+{
+    if constexpr (CMD::application_specific)
+    {
+        auto r = sd_send_cmd_impl<CMD55>(0);
+        if (!r)
+            return std::optional<typename CMD::response_type> { std::nullopt };
+    }
+    return sd_send_cmd_impl<CMD>(argument);
+}
+
+void sdcard_init()
+{
+    volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
+    setup_sd_io();
+    sd_send_cmd<CMD0>();
+    for (volatile int i = 0; i < 1024; i++)
+        ;
+    auto r = sd_send_cmd<CMD8>(0x1aa);
+    if (!r) // SD SC
+    {
+        // r = sd_send_cmd<41>(0);
+        return;
+    }
+    else if (r->value != 0x1aa)
+    {
+
+    } // SD HC
+    else
+    {
+        do
+        {
+
+            r = sd_send_cmd<ACMD41>(0x40000000);
+        } while (!(r->value & 0x80000000));
+    }
 }
 
 int main(void)
@@ -132,20 +216,11 @@ int main(void)
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
-    setup_sd_io();
-
     // GPIO K3 = LCD backlight ctrl
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
-    //send_cmd(2, 0);
-    auto r= sd_send_cmd<0>();
-    for(volatile int i =0;i<1024*16;i++);
-    r= sd_send_cmd<8>();
-    if(!r)
-    {
-        r = sd_send_cmd<41>(0);
-    }
+    sdcard_init();
     for (;;)
     {
         card_detect = stm32f7.GPIOC.id.get<13>();
