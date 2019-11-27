@@ -78,6 +78,46 @@ inline void send_cmd(int cmd, int argument = 0)
         ;
 }
 
+template<int cmd_index>
+inline auto sd_send_cmd(uint32_t argument = 0)
+{
+    stm32f7.sdmmc.ICR |= 0x1ff;
+    using ICR = decltype (stm32f7.sdmmc.ICR);
+    using CMD = decltype (stm32f7.sdmmc.CMD);
+    stm32f7.sdmmc.ICR |= ICR::CMDRENDC.shift(1) | ICR::CTIMEOUTC.shift(1);
+    stm32f7.sdmmc.ARG = argument;
+    auto cmd = CMD::CPSMEN.shift(1) | CMD::CMDINDEX.shift(cmd_index);
+    // 128 bits response
+    if constexpr(cmd_index == 2 or cmd_index == 7 or cmd_index == 9 or cmd_index == 10)
+    {
+        cmd = cmd | CMD::WAITRESP.shift(3);
+    }
+    // no resp
+    else if constexpr (cmd_index == 0)
+    {
+        cmd = cmd | CMD::WAITRESP.shift(0);
+    }
+    // 48 bits response
+    else
+    {
+        cmd = cmd | CMD::WAITRESP.shift(1);
+    }
+    stm32f7.sdmmc.CMD = cmd;
+    if constexpr(cmd_index !=0)
+    {
+        while (!(stm32f7.sdmmc.STA.CMDREND or stm32f7.sdmmc.STA.CTIMEOUT))
+        {
+            int sta = stm32f7.sdmmc.STA;
+            sta = stm32f7.sdmmc.STA;
+        }
+        if(stm32f7.sdmmc.STA.CTIMEOUT)
+            return false;
+        return true;
+    }
+    while (!stm32f7.sdmmc.STA.CMDSENT);
+    return true;
+}
+
 int main(void)
 {
     /* ==========================================================================
@@ -98,8 +138,14 @@ int main(void)
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
-    send_cmd(2, 0);
-
+    //send_cmd(2, 0);
+    auto r= sd_send_cmd<0>();
+    for(volatile int i =0;i<1024*16;i++);
+    r= sd_send_cmd<8>();
+    if(!r)
+    {
+        r = sd_send_cmd<41>(0);
+    }
     for (;;)
     {
         card_detect = stm32f7.GPIOC.id.get<13>();

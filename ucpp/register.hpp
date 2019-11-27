@@ -23,6 +23,11 @@ struct bitfield_value_t
         return bitfield_value_t<T>{lhs.value | rhs.value, lhs.mask|rhs.mask};
     }
 
+    friend inline constexpr auto operator|=(const bitfield_value_t& lhs, const bitfield_value_t& rhs)
+    {
+        return bitfield_value_t<T>{lhs.value | rhs.value, lhs.mask|rhs.mask};
+    }
+
     friend inline constexpr auto operator|(int lhs, const bitfield_value_t& rhs)
     {
         return lhs | rhs.value;
