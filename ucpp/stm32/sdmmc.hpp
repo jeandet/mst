@@ -22,7 +22,7 @@ inline constexpr auto response()
     else if constexpr (is_long_response_v<CMD>)
     {
         return std::optional<long_response> { long_response {
-            sdmmc_dev::RESP1, sdmmc_dev::RESP2, sdmmc_dev::RESP3, sdmmc_dev::RESP4 } };
+                sdmmc_dev::RESP1, sdmmc_dev::RESP2, sdmmc_dev::RESP3, sdmmc_dev::RESP4 } };
     }
 }
 template <typename CMD>
@@ -30,11 +30,11 @@ inline constexpr int WAITRESP_v()
 {
     using namespace ucpp::sdcard::commands;
     if constexpr (is_no_response_v<CMD>)
-        return 0;
+            return 0;
     if constexpr (is_short_response_v<CMD>)
-        return 1;
+            return 1;
     if constexpr (is_long_response_v<CMD>)
-        return 3;
+            return 3;
 }
 
 template <typename sdmmc_dev>
@@ -50,7 +50,7 @@ inline constexpr void cmd_set_cmd_reg()
     using namespace ucpp::sdcard::commands;
     using cmd_reg = decltype(sdmmc_dev::CMD);
     sdmmc_dev::CMD |= cmd_reg::CPSMEN.shift(1) | cmd_reg::CMDINDEX.shift(CMD::index)
-        | cmd_reg::WAITRESP.shift(WAITRESP_v<CMD>());
+            | cmd_reg::WAITRESP.shift(WAITRESP_v<CMD>());
 }
 
 template <typename sdmmc_dev>
@@ -109,12 +109,33 @@ struct sdmmc_ctrlr
                 if(cmd_crc_fail<sdmmc_dev>())
                 {
                     if constexpr (has_crc_v<CMD>)
-                        return std::optional<typename CMD::response_type> { std::nullopt };
+                            return std::optional<typename CMD::response_type> { std::nullopt };
                     else
-                        return response<CMD,sdmmc_dev>();
+                    return response<CMD,sdmmc_dev>();
                 }
             }
         }
+    }
+
+    inline static constexpr auto read_data(char* data, std::size_t count)
+    {
+        using namespace ucpp::sdcard::commands;
+        sdmmc_dev::DCTRL = sdmmc_dev::DCTRL.DBLOCKSIZE.shift(8) | sdmmc_dev::DCTRL.DTDIR.shift(1)| sdmmc_dev::DCTRL.DTEN.shift(1);
+        int bytes = count;
+        while (bytes>0)
+        {
+            volatile int sta = sdmmc_dev::STA;
+            if(sdmmc_dev::STA.RXFIFOE == 0)
+            {
+                uint32_t tmp = sdmmc_dev::FIFO;
+                data[count-bytes] = static_cast<char>(tmp&0xff);
+                data[count-bytes-1] = static_cast<char>((tmp>>8)&0xff);
+                data[count-bytes-2] = static_cast<char>((tmp>>16)&0xff);
+                data[count-bytes-3] = static_cast<char>((tmp>>24)&0xff);
+                bytes -= 4;
+            }
+        }
+        return true;
     }
 
 };

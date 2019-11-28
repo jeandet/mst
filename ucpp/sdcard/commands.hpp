@@ -63,7 +63,12 @@ struct SD_CMD {
 };
 
 using CMD0 = SD_CMD<0, no_response>;
+using CMD2 = SD_CMD<2, long_response>;
+using CMD3 = SD_CMD<3, short_response>;
+using CMD7 = SD_CMD<7, short_response>;
 using CMD8 = SD_CMD<8, short_response>;
+using CMD16 = SD_CMD<16, short_response>;
+using CMD17 = SD_CMD<17, short_response>;
 using CMD55 = SD_CMD<55, short_response>;
 using ACMD41 = SD_CMD<41, short_response, application_specific_cmd, ignore_crc>;
 }

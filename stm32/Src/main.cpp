@@ -13,12 +13,12 @@
 #endif
 
 #include "../../ucpp/register.hpp"
+#include "../../ucpp/sdcard/sdcard.hpp"
 #include "../../ucpp/stm32/gpio.hpp"
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/sdmmc.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
-#include "../../ucpp/sdcard/sdcard.hpp"
 #include <optional>
 //#include <iostream> // <- beware this kills kittens
 volatile int card_detect;
@@ -63,23 +63,24 @@ inline void setup_sd_io()
     stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
     stm32f7.sdmmc.CLKCR
-        = CLKCR::CLKDIV.shift((16 * 1000 * 1000) / (400 * 1000) - 2) | CLKCR::WIDBUS.shift(1);
+        = CLKCR::CLKDIV.shift((16 * 1000 * 1000) / (400 * 1000) - 2) | CLKCR::WIDBUS.shift(0);
     stm32f7.sdmmc.POWER.PWRCTRL = 3;
     stm32f7.sdmmc.CLKCR |= CLKCR::CLKEN.shift(1);
     for (volatile int i = 0; i < 1024 * 16; i++)
         ;
 }
 
+/* ==========================================================================
+ *         Old style struct mapping for debug (gdb sugar)
+   ==========================================================================*/
+volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
+volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
+volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
+volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
+// ===========================================================================
+
 int main(void)
 {
-    /* ==========================================================================
-     *         Old style struct mapping for debug (gdb sugar)
-       ==========================================================================*/
-    volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
-    volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
-    volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
-    volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
-    // ===========================================================================
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
@@ -88,10 +89,12 @@ int main(void)
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
-    //sdcard_init();
+    // sdcard_init();
     setup_sd_io();
-    ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype (stm32f7.sdmmc)>> sdcrad;
+    ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
     sdcrad.init();
+    char test[512];
+    sdcrad.read_block(0, test);
     for (;;)
     {
         card_detect = stm32f7.GPIOC.id.get<13>();
