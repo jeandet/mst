@@ -42,7 +42,7 @@ inline constexpr void cmd_clear_icr_flags()
 {
     using namespace ucpp::sdcard::commands;
     using ICR = decltype(sdmmc_dev::ICR);
-    sdmmc_dev::ICR |= ICR::CMDRENDC.shift(1) | ICR::CTIMEOUTC.shift(1) | ICR::CMDSENTC.shift(1);
+    sdmmc_dev::ICR |= ICR::CMDRENDC.shift(1) | ICR::CTIMEOUTC.shift(1) | ICR::CMDSENTC.shift(1) | ICR::CCRCFAILC.shift(1);
 }
 template <typename sdmmc_dev, typename CMD>
 inline constexpr void cmd_set_cmd_reg()
@@ -69,6 +69,12 @@ template <typename sdmmc_dev>
 inline constexpr bool cmd_timeout()
 {
     return  sdmmc_dev::STA.CTIMEOUT == 1;
+}
+
+template <typename sdmmc_dev>
+inline constexpr bool cmd_crc_fail()
+{
+    return  sdmmc_dev::STA.CCRCFAIL == 1;
 }
 
 }
@@ -99,6 +105,13 @@ struct sdmmc_ctrlr
                 if (cmd_timeout<sdmmc_dev>())
                 {
                     return std::optional<typename CMD::response_type> { std::nullopt };
+                }
+                if(cmd_crc_fail<sdmmc_dev>())
+                {
+                    if constexpr (has_crc_v<CMD>)
+                        return std::optional<typename CMD::response_type> { std::nullopt };
+                    else
+                        return response<CMD,sdmmc_dev>();
                 }
             }
         }

@@ -23,15 +23,14 @@ struct Sdcard
         }
         else if (r->value != 0x1aa)
         {
-
+            return false;
         } // SD HC
         else
         {
             do
             {
-
                 r = Sdcard::send_cmd<ACMD41>(0x40000000);
-            } while (!(r->value & 0x80000000));
+            } while (r->value & 0xff);
         }
         return true;
     }
