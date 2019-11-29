@@ -58,6 +58,7 @@ struct Sdcard
         r = Sdcard::send_cmd<CMD3>();
         if(r)
         {
+            bus::set_speed(-1);
             RCA = r->value>>16;
             return set_block_size<Sdcard>(1024);
         }

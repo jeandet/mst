@@ -24,6 +24,7 @@ inline constexpr bool is_##device##_v = is_##device<T>::value;
 DECLARE_DEVICE(uart)
 DECLARE_DEVICE(gpio)
 DECLARE_DEVICE(sdmmc)
+DECLARE_DEVICE(spi)
 
 DECLARE_DEVICE(apb_bus)
 

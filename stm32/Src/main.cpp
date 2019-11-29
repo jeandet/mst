@@ -17,6 +17,8 @@
 #include "../../ucpp/stm32/gpio.hpp"
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/sdmmc.hpp"
+#include "../../ucpp/stm32/spi.hpp"
+#include "../../ucpp/spi.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
 #include <optional>
@@ -68,6 +70,17 @@ inline void setup_sd_io()
     stm32f7.sdmmc.CLKCR |= CLKCR::CLKEN.shift(1);
     for (volatile int i = 0; i < 1024 * 16; i++)
         ;
+}
+
+//CS       = PB9
+//SCK      = PB11
+//MISO     = PB14
+//MOSI     = PB15
+//DREQ     = PA8
+//BYTESYNC = PA15
+inline void init_spi()
+{
+
 }
 
 /* ==========================================================================

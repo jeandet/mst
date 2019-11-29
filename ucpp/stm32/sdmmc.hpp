@@ -82,6 +82,22 @@ inline constexpr bool cmd_crc_fail()
 template <typename sdmmc_dev>
 struct sdmmc_ctrlr
 {
+    inline static constexpr void set_speed(int speed)
+    {
+        for(volatile int i=0;i<1024*256;i++);
+        if(speed==-1)
+        {
+            sdmmc_dev::CLKCR
+                |= sdmmc_dev::CLKCR.CLKDIV.shift(0);
+        }
+        else
+        {
+            auto div = std::max((16 * 1000 * 1000) / (speed) - 2, 0);
+            sdmmc_dev::CLKCR
+                |= sdmmc_dev::CLKCR.CLKDIV.shift(div);
+        }
+        for(volatile int i=0;i<1024*256;i++);
+    }
     template <typename CMD>
     inline static constexpr auto send_cmd(uint32_t argument)
     {

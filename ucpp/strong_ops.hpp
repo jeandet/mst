@@ -5,10 +5,11 @@
 
 namespace ucpp::strong_types::ops
 {
+using namespace ucpp::utils::tinystl;
 struct self_t{};
 
 template<typename u, typename self_t_>
-using resolve = ucpp::utils::conditional<ucpp::utils::is_same<u,self_t>::value, self_t_, u>;
+using resolve = conditional<is_same<u,self_t>::value, self_t_, u>;
 
 template<typename u, typename self_t_>
 using resolve_t = typename resolve<u,self_t_>::type;
@@ -18,7 +19,7 @@ struct has_value {
 
     template <typename U>
     static constexpr
-    decltype(ucpp::utils::declval<U>().value(), bool())
+    decltype(declval<U>().value(), bool())
     test_value(int) {
         return true;
     }
@@ -54,7 +55,7 @@ template<typename lhs_t=self_t, typename rhs_t=self_t, typename result_t=self_t,
         }
     };
 
-    template<class Object> struct type : ucpp::utils::conditional<permutable, permutation<Object>, self_t>::type
+    template<class Object> struct type : conditional<permutable, permutation<Object>, self_t>::type
     {
         inline friend resolve_t<result_t, Object> operator+(const resolve_t<lhs_t, Object>& lhs, const resolve_t<rhs_t, Object>& rhs)
         {
@@ -85,7 +86,7 @@ template<typename lhs_t=self_t, typename rhs_t=self_t, typename result_t=self_t,
         }
     };
 
-    template<class Object> struct type : ucpp::utils::conditional<permutable, permutation<Object>, self_t>::type
+    template<class Object> struct type : conditional<permutable, permutation<Object>, self_t>::type
     {
         friend resolve_t<result_t, Object> operator-(const resolve_t<lhs_t, Object>& lhs, const resolve_t<rhs_t, Object>& rhs)
         {
