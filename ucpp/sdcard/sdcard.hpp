@@ -59,7 +59,7 @@ struct Sdcard
         if(r)
         {
             RCA = r->value>>16;
-            return set_block_size<Sdcard>(512);
+            return set_block_size<Sdcard>(1024);
         }
         return false;
     }
@@ -85,7 +85,7 @@ struct Sdcard
         {
             resp  = send_cmd<CMD17>(address);
             if(resp)
-                return bus::read_data(data, 512);
+                return bus::read_data(data, 1024);
         }
         return false;
     }

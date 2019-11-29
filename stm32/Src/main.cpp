@@ -93,7 +93,7 @@ int main(void)
     setup_sd_io();
     ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
     sdcrad.init();
-    char test[512];
+    char test[1024];
     sdcrad.read_block(0, test);
     for (;;)
     {
