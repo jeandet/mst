@@ -3,6 +3,7 @@
 #include "./gpio.hpp"
 #include "./rcc.hpp"
 #include "./sdmmc.hpp"
+#include "./spi.hpp"
 #include <stdint.h>
 
 using namespace ucpp::registers;
@@ -47,5 +48,11 @@ static constexpr struct stm32f7_t
     static constexpr gpio::Gpio<0x40022800, 10> GPIOK = {};
     static constexpr rcc::RCC_t<0x40023800, 0> rcc = {};
     static constexpr sdmmc::sdmmc_t<0x40012C00, 0> sdmmc = {};
+    static constexpr spi::spi_t<0x40013000, 0> SPI1 = {};
+    static constexpr spi::spi_t<0x40003800, 1> SPI2 = {};
+    static constexpr spi::spi_t<0x40003C00, 2> SPI3 = {};
+    static constexpr spi::spi_t<0x40013400, 3> SPI4 = {};
+    static constexpr spi::spi_t<0x40015000, 4> SPI5 = {};
+    static constexpr spi::spi_t<0x40015400, 5> SPI6 = {};
 } stm32f7 = {};
 }

@@ -19,6 +19,7 @@
 #include "../../ucpp/stm32/sdmmc.hpp"
 #include "../../ucpp/stm32/spi.hpp"
 #include "../../ucpp/spi.hpp"
+#include "../../ucpp/codec/vs1002.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
 #include <optional>
@@ -72,6 +73,24 @@ inline void setup_sd_io()
         ;
 }
 
+struct vs1002_io{
+    static constexpr void xcs(bool v)
+    {
+        stm32f7.GPIOB.od.get<9>()=v;
+    }
+    static constexpr void xdcs(bool v)
+    {
+        stm32f7.GPIOA.od.get<15>()=v;
+    }
+    static constexpr bool dreq()
+    {
+        return stm32f7.GPIOA.id.get<8>();
+    }
+    static constexpr void reset(bool v)
+    {
+
+    }
+};
 //CS       = PB9
 //SCK      = PB11
 //MISO     = PB14
@@ -106,13 +125,17 @@ int main(void)
     setup_sd_io();
     ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
     sdcrad.init();
-    char test[1024];
-    sdcrad.read_block(0, test);
+    using codec_t = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype (ucpp::stm32::stm32f7_t::SPI2)>,vs1002_io>;
+    codec_t::init();
+    int block = 0;
     for (;;)
     {
-        card_detect = stm32f7.GPIOC.id.get<13>();
-        stm32f7.GPIOK.od.get<3>() = stm32f7.GPIOC.id.get<13>();
-        int v = stm32f7.GPIOK.id; // check that int() is working
-        // stm32f7.GPIOK.od = 10;
+        char data[1024];
+        sdcrad.read_block(block, data);
+        for(int i=0;i<1024;i+=32)
+        {
+            codec_t::write_data(data+i);
+        }
+        block++;
     }
 }

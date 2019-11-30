@@ -41,14 +41,14 @@ struct SPI {
 
   template <typename T> static constexpr T write(T data) {
     static_assert(
-        !ucpp::utils::is_one_of<T, uint8_t, uint16_t, uint32_t>::value,
+        ucpp::utils::is_one_of<T, uint8_t, uint16_t, uint32_t>::value,
         "write function only accept uint8_t, uint16_t or uint32_t");
     return p_write(data);
   }
 
   template <typename T> static constexpr T read(T data) {
     static_assert(
-        !ucpp::utils::is_one_of<T, uint8_t, uint16_t, uint32_t>::value,
+        ucpp::utils::is_one_of<T, uint8_t, uint16_t, uint32_t>::value,
         "read function only accept uint8_t, uint16_t or uint32_t");
     return write(data);
   }
