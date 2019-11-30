@@ -12,14 +12,14 @@
     "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
 
+#include "../../ucpp/codec/vs1002.hpp"
 #include "../../ucpp/register.hpp"
 #include "../../ucpp/sdcard/sdcard.hpp"
+#include "../../ucpp/spi.hpp"
 #include "../../ucpp/stm32/gpio.hpp"
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/sdmmc.hpp"
 #include "../../ucpp/stm32/spi.hpp"
-#include "../../ucpp/spi.hpp"
-#include "../../ucpp/codec/vs1002.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
 #include "../../ucpp/strong_types.hpp"
 #include <optional>
@@ -34,20 +34,20 @@ using namespace ucpp::stm32;
 // SDMMC_CK (PC12) AF12
 // SDMMC_CMD (PD2) AF12
 
-template <typename gpio_t, int I>
-inline void _setup_sd_io(gpio_t& gpio)
+template <typename gpio_t, gpio::alternate_function af, int I>
+inline void _setup_all_af(gpio_t& gpio)
 {
     using namespace gpio;
-    alternate_function_field<I>(gpio) = alternate_function::af12;
+    alternate_function_field<I>(gpio) = af;
     mode_field<I>(gpio) = mode::alternate_function;
     speed_field<I>(gpio) = gpio::speed::very_high;
     output_type_field<I>(gpio) = gpio::output_type::push_pull;
 }
 
-template <typename gpio_t, int... I>
-inline void setup_sd_all_io(gpio_t& gpio)
+template <typename gpio_t, gpio::alternate_function af, int... I>
+inline void setup_all_af(gpio_t& gpio)
 {
-    (_setup_sd_io<gpio_t, I>(gpio), ...);
+    (_setup_all_af<gpio_t, af, I>(gpio), ...);
 }
 
 inline void reset_sd()
@@ -60,8 +60,9 @@ inline void reset_sd()
 inline void setup_sd_io()
 {
     reset_sd();
-    setup_sd_all_io<decltype(stm32f7.GPIOC), 8, 9, 10, 11, 12>(stm32f7.GPIOC);
-    setup_sd_all_io<decltype(stm32f7.GPIOD), 2>(stm32f7.GPIOD);
+    setup_all_af<decltype(stm32f7.GPIOC), gpio::alternate_function::af12, 8, 9, 10, 11, 12>(
+        stm32f7.GPIOC);
+    setup_all_af<decltype(stm32f7.GPIOD), gpio::alternate_function::af12, 2>(stm32f7.GPIOD);
     using CLKCR = decltype(stm32f7.sdmmc.CLKCR);
     stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
@@ -73,68 +74,81 @@ inline void setup_sd_io()
         ;
 }
 
-struct vs1002_io{
-    static constexpr void xcs(bool v)
-    {
-        stm32f7.GPIOB.od.get<9>()=v;
-    }
-    static constexpr void xdcs(bool v)
-    {
-        stm32f7.GPIOA.od.get<15>()=v;
-    }
-    static constexpr bool dreq()
-    {
-        return stm32f7.GPIOA.id.get<8>();
-    }
-    static constexpr void reset(bool v)
-    {
-
-    }
-};
-//CS       = PB9
-//SCK      = PB11
-//MISO     = PB14
-//MOSI     = PB15
-//DREQ     = PA8
-//BYTESYNC = PA15
-inline void init_spi()
+struct vs1002_io
 {
-
+    static constexpr void xcs(bool v) { stm32f7.GPIOB.od.get<9>() = v; }
+    static constexpr void xdcs(bool v) { stm32f7.GPIOA.od.get<15>() = v; }
+    static constexpr bool dreq() { return stm32f7.GPIOA.id.get<8>(); }
+    static constexpr void reset(bool v) { stm32f7.GPIOI.od.get<2>() = v; }
+};
+// CS       = PB9
+// SCK      = PB11
+// MISO     = PB14
+// MOSI     = PB15
+// DREQ     = PA8
+// BYTESYNC = PA15
+// RESET    = PI2
+inline void setup_codec_io()
+{
+    using namespace gpio;
+    setup_all_af<decltype(stm32f7.GPIOB), gpio::alternate_function::af5, 14, 15>(stm32f7.GPIOB);
+    setup_all_af<decltype(stm32f7.GPIOI), gpio::alternate_function::af5, 1>(stm32f7.GPIOI);
+    mode_field<9>(stm32f7.GPIOB) = mode::output;
+    speed_field<9>(stm32f7.GPIOB) = gpio::speed::very_high;
+    output_type_field<9>(stm32f7.GPIOB) = gpio::output_type::push_pull;
+    mode_field<15>(stm32f7.GPIOA) = mode::output;
+    speed_field<15>(stm32f7.GPIOA) = gpio::speed::very_high;
+    output_type_field<15>(stm32f7.GPIOA) = gpio::output_type::push_pull;
+    mode_field<12>(stm32f7.GPIOI) = mode::output;
+    speed_field<12>(stm32f7.GPIOI) = gpio::speed::very_high;
+    output_type_field<12>(stm32f7.GPIOI) = gpio::output_type::push_pull;
+    mode_field<8>(stm32f7.GPIOA) = mode::input;
+    speed_field<8>(stm32f7.GPIOA) = gpio::speed::very_high;
 }
 
-/* ==========================================================================
- *         Old style struct mapping for debug (gdb sugar)
-   ==========================================================================*/
-volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
-volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
-volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
-volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
-// ===========================================================================
 
 int main(void)
 {
-    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
+    /* ==========================================================================
+     *         Old style struct mapping for debug (gdb sugar)
+       ==========================================================================*/
+    volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
+    volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
+    volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
+    volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
+    volatile spi::spi_c_t* spi2 = (spi::spi_c_t*)(stm32f7.SPI2.address);
+    // ===========================================================================
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOA);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOB);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.SPI2);
+    stm32f7.rcc.APB1ENR.SPI2EN = 1;
+    stm32f7.rcc.APB1RSTR.SPI2RST = 1;
+    stm32f7.rcc.APB1RSTR.SPI2RST = 0;
+    stm32f7.rcc.APB1ENR.SPI2EN = 1;
     // GPIO K3 = LCD backlight ctrl
     gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
     // sdcard_init();
     setup_sd_io();
+    setup_codec_io();
     ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
     sdcrad.init();
-    using codec_t = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype (ucpp::stm32::stm32f7_t::SPI2)>,vs1002_io>;
+    using codec_t = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype(stm32f7.SPI2)>, vs1002_io>;
+    stm32f7.SPI2.CR1 = (1 << 2) + (1 << 6);
     codec_t::init();
     int block = 0;
     for (;;)
     {
         char data[1024];
         sdcrad.read_block(block, data);
-        for(int i=0;i<1024;i+=32)
+        for (int i = 0; i < 1024; i += 32)
         {
-            codec_t::write_data(data+i);
+            codec_t::write_data(data + i);
         }
         block++;
     }

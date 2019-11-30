@@ -38,6 +38,24 @@ auto& clk_enable_bit(const rcc_t& rcc, const device_t&,
 
 template <typename rcc_t, typename device_t>
 auto& clk_enable_bit(const rcc_t& rcc, const device_t&,
+    typename std::enable_if_t<is_spi_v<device_t>>* = 0)
+{
+    if constexpr (device_t::index == 0)
+        return rcc.APB2ENR.SPI1EN;
+    if constexpr (device_t::index == 1)
+        return rcc.APB1ENR.SPI2EN;
+    if constexpr (device_t::index == 2)
+        return rcc.APB1ENR.SPI3EN;
+    if constexpr (device_t::index == 3)
+        return rcc.APB2ENR.SPI4ENR;
+    if constexpr (device_t::index == 4)
+        return rcc.APB2ENR.SPI5ENR;
+    if constexpr (device_t::index == 5)
+        return rcc.APB2ENR.SPI6ENR;
+}
+
+template <typename rcc_t, typename device_t>
+auto& clk_enable_bit(const rcc_t& rcc, const device_t&,
     typename std::enable_if_t<is_sdmmc_v<device_t>>* = 0)
 {
     return rcc.APB2ENR.SDMMC1EN;

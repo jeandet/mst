@@ -12,7 +12,7 @@ template <typename regs, typename word_size = w8bits,
 struct SPI {
   // TODO make this configurable!
   static constexpr void init() {
-    static_assert(!is_16bits_or_less_v<word_size>, "unsuported word size");
+    static_assert(is_16bits_or_less_v<word_size>, "unsuported word size");
     regs::CR1 = regs::CR1.SPE.shift(1) | regs::CR1.MSTR.shift(1) |
                 regs::CR1.LSBFIRST.shift(is_lsb_first_v<bit_order>);
     if constexpr (is_8bits_v<word_size>)
@@ -41,14 +41,14 @@ struct SPI {
 
   template <typename T> static constexpr T write(T data) {
     static_assert(
-        ucpp::utils::is_one_of<T, uint8_t, uint16_t, uint32_t>::value,
+        ucpp::utils::is_one_of<T, char,uint8_t, uint16_t, uint32_t>::value,
         "write function only accept uint8_t, uint16_t or uint32_t");
     return p_write(data);
   }
 
   template <typename T> static constexpr T read(T data) {
     static_assert(
-        ucpp::utils::is_one_of<T, uint8_t, uint16_t, uint32_t>::value,
+        ucpp::utils::is_one_of<T, char, uint8_t, uint16_t, uint32_t>::value,
         "read function only accept uint8_t, uint16_t or uint32_t");
     return write(data);
   }

@@ -25,6 +25,7 @@ template <typename spi, typename io_pins> struct vs1002 {
   static uint16_t model;
   static constexpr void init()
   {
+    spi::init();
     io_pins::xcs(1);
     io_pins::xdcs(1);
     io_pins::reset(0);
