@@ -77,6 +77,8 @@ template <typename rcc_type, typename device_t>
 void enable_clock(const rcc_type& rccdev, const device_t& device, bool state = true)
 {
     clk_enable_bit(rccdev, device) = state;
+    state = clk_enable_bit(rccdev, device);
+    (void)state;
 }
 
 template <typename rcc_type, typename device_t>

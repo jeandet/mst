@@ -136,21 +136,20 @@ struct sdmmc_ctrlr
     inline static constexpr auto read_data(char* data, std::size_t count)
     {
         using namespace ucpp::sdcard::commands;
+        sdmmc_dev::DTIMER = 0xfffffff;
         sdmmc_dev::DLEN = count;
-        sdmmc_dev::DTIMER = 1024*1024;
-        sdmmc_dev::DCTRL = sdmmc_dev::DCTRL.DBLOCKSIZE.shift(10) | sdmmc_dev::DCTRL.RWMOD.shift(0) | sdmmc_dev::DCTRL.DTDIR.shift(1)| sdmmc_dev::DCTRL.DTEN.shift(1);
-        int bytes = count;
-        while (bytes>0)
+        sdmmc_dev::DCTRL = sdmmc_dev::DCTRL.DBLOCKSIZE.shift(10) | sdmmc_dev::DCTRL.RWMOD.shift(1) | sdmmc_dev::DCTRL.DTDIR.shift(1)| sdmmc_dev::DCTRL.DTEN.shift(1);
+        int bytes = 0;
+        while (bytes!=count)
         {
-            volatile int sta = sdmmc_dev::STA;
-            if(sdmmc_dev::STA.RXDAVL == 1)
+            while(sdmmc_dev::STA.RXFIFOE != 1)
             {
                 uint32_t tmp = sdmmc_dev::FIFO;
-                data[count-bytes-0] = static_cast<char>((tmp>>24)&0xff);
-                data[count-bytes-1] = static_cast<char>((tmp>>16)&0xff);
-                data[count-bytes-2] = static_cast<char>((tmp>>8)&0xff);
-                data[count-bytes-3] = static_cast<char>(tmp&0xff);
-                bytes -= 4;
+                data[bytes+3] = static_cast<char>((tmp>>24)&0xff);
+                data[bytes+2] = static_cast<char>((tmp>>16)&0xff);
+                data[bytes+1] = static_cast<char>((tmp>>8)&0xff);
+                data[bytes] = static_cast<char>(tmp&0xff);
+                bytes += 4;
             }
         }
         volatile int c = sdmmc_dev::FIFOCNT;

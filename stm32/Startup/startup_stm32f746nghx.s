@@ -75,8 +75,16 @@ LoopFillZerobss:
   cmp r2, r4
   bcc FillZerobss
 
+
+LDR R0, =0xE000ED88
+LDR r1, [R0]
+ORR R1, R1, #(0xF << 20)
+STR R1, [R0]
+DSB
+ISB
+
 /* Call the clock system intitialization function.*/
-  bl  SystemInit
+//  bl  SystemInit
 /* Call static constructors */
   bl __libc_init_array
 /* Call the application's entry point.*/

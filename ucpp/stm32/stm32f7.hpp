@@ -4,6 +4,9 @@
 #include "./rcc.hpp"
 #include "./sdmmc.hpp"
 #include "./spi.hpp"
+#include "./pwr-regs.hpp"
+#include "./scb-regs.hpp"
+#include "./dma-regs.hpp"
 #include <stdint.h>
 
 using namespace ucpp::registers;
@@ -54,5 +57,8 @@ static constexpr struct stm32f7_t
     static constexpr spi::spi_t<0x40013400, 3> SPI4 = {};
     static constexpr spi::spi_t<0x40015000, 4> SPI5 = {};
     static constexpr spi::spi_t<0x40015400, 5> SPI6 = {};
+    static constexpr pwr::pwr_t<0x40007000, 0> pwr = {};
+    static constexpr dma::dma_t<0x40026000, 0> DMA1 = {};
+    static constexpr dma::dma_t<0x40026400, 1> DMA2 = {};
 } stm32f7 = {};
 }

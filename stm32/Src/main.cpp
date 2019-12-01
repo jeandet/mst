@@ -16,7 +16,9 @@
 #include "../../ucpp/register.hpp"
 #include "../../ucpp/sdcard/sdcard.hpp"
 #include "../../ucpp/spi.hpp"
+#include "../../ucpp/stm32/dma-regs.hpp"
 #include "../../ucpp/stm32/gpio.hpp"
+#include "../../ucpp/stm32/pwr-regs.hpp"
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/sdmmc.hpp"
 #include "../../ucpp/stm32/spi.hpp"
@@ -33,6 +35,25 @@ using namespace ucpp::stm32;
 // SDMMC_D3 (PC11) AF12
 // SDMMC_CK (PC12) AF12
 // SDMMC_CMD (PD2) AF12
+void setup_clocks()
+{
+    //    using CR_t = decltype(stm32f7.rcc.CR);
+    //    using CFGR_t = decltype(stm32f7.rcc.CFGR);
+    //    stm32f7.rcc.CR |= 1;
+    //    stm32f7.rcc.CFGR = 0;
+    //    stm32f7.rcc.CR &= 0xFEF6FFFF;
+    //    stm32f7.rcc.PLLCFGR = 0x24003010;
+    //    stm32f7.rcc.CR &= 0xFFFBFFFF;
+    //    stm32f7.rcc.CIR = 0;
+    //    stm32f7.rcc.APB1ENR.PWREN = 1;
+    //    stm32f7.rcc.APB2ENR.SYSCFGEN = 1;
+    //    stm32f7.pwr.CR1.VOS = 1;
+    //    stm32f7.rcc.CR = CR_t::HSION.shift(1) | CR_t::HSITRIM.shift(2);
+    //    while (!stm32f7.rcc.CR.HSIRDY)
+    //        ;
+    //    stm32f7.rcc.CFGR = CFGR_t::SW0.shift(0) | CFGR_t::HPRE.shift(0) | CFGR_t::PPRE1.shift(0)
+    //        | CFGR_t::PPRE2.shift(0);
+}
 
 template <typename gpio_t, gpio::alternate_function af, int I>
 inline void _setup_all_af(gpio_t& gpio)
@@ -106,6 +127,11 @@ inline void setup_codec_io()
     speed_field<8>(stm32f7.GPIOA) = gpio::speed::very_high;
 }
 
+void test_timer12()
+{
+    stm32f7.rcc.APB1ENR.TIM12EN = 1;
+    *reinterpret_cast<volatile uint32_t*>(0x40001800) = 1;
+}
 
 int main(void)
 {
@@ -117,31 +143,33 @@ int main(void)
     volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
     volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
     volatile spi::spi_c_t* spi2 = (spi::spi_c_t*)(stm32f7.SPI2.address);
+    volatile spi::spi_c_t* spi6 = (spi::spi_c_t*)(stm32f7.SPI6.address);
+    volatile uint32_t* timer12_CR = reinterpret_cast<volatile uint32_t*>(0x40001800);
     // ===========================================================================
+    setup_clocks();
+    rcc::enable_clock(stm32f7.rcc, stm32f7.SPI2);
+    rcc::enable_clock(stm32f7.rcc, stm32f7.SPI6);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOA);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOB);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
-    rcc::enable_clock(stm32f7.rcc, stm32f7.SPI2);
-    stm32f7.rcc.APB1ENR.SPI2EN = 1;
-    stm32f7.rcc.APB1RSTR.SPI2RST = 1;
-    stm32f7.rcc.APB1RSTR.SPI2RST = 0;
-    stm32f7.rcc.APB1ENR.SPI2EN = 1;
+    rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
+    // test_timer12();
     // GPIO K3 = LCD backlight ctrl
-    gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
-    stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
-    stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
+    //    gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
+    //    stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
+    //    stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
     // sdcard_init();
     setup_sd_io();
     setup_codec_io();
     ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
     sdcrad.init();
     using codec_t = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype(stm32f7.SPI2)>, vs1002_io>;
-    stm32f7.SPI2.CR1 = (1 << 2) + (1 << 6);
+
     codec_t::init();
-    int block = 0;
+    int block = 2;
     for (;;)
     {
         char data[1024];
