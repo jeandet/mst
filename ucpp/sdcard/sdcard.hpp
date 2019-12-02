@@ -60,7 +60,7 @@ struct Sdcard
         {
             bus::set_speed(10000000);
             RCA = r->value>>16;
-            return true;//set_block_size<Sdcard>(1024);
+            return set_block_size<Sdcard>(512);
         }
         return false;
     }
@@ -87,17 +87,7 @@ struct Sdcard
     inline constexpr auto read_block(uint32_t address, char* data)
     {
         using namespace commands;
-        int timeout = 10;
-        do{
-            //auto resp  = send_cmd<CMD7>(RCA<<16);
-            //if(resp)
-            {
-                auto  resp  = send_cmd<CMD17>(address);
-                if(resp)
-                    return bus::read_data(data, 512);
-            }
-
-        }while (timeout--);
+        return bus::read_data(address, data, 512);
         return false;
     }
 };

@@ -17,6 +17,7 @@
 #include "../../ucpp/sdcard/sdcard.hpp"
 #include "../../ucpp/spi.hpp"
 #include "../../ucpp/stm32/dma-regs.hpp"
+#include "../../ucpp/stm32/dma.hpp"
 #include "../../ucpp/stm32/gpio.hpp"
 #include "../../ucpp/stm32/pwr-regs.hpp"
 #include "../../ucpp/stm32/rcc.hpp"
@@ -29,7 +30,7 @@
 volatile int card_detect;
 using namespace ucpp::stm32;
 
-char data[1024];
+char data[512];
 
 // SDMMC_D0 (PC8)  AF12
 // SDMMC_D1 (PC9)  AF12
@@ -60,11 +61,11 @@ void setup_clocks()
     stm32f7.rcc.PLLCFGR.PLLN7 = 1;
     stm32f7.rcc.PLLCFGR.PLLN6 = 1;
     stm32f7.rcc.PLLCFGR.PLLP0 = 1;
-    stm32f7.rcc.CR.PLLON=1;
+    stm32f7.rcc.CR.PLLON = 1;
     stm32f7.flash.ACR.LATENCY = 1;
-    while (stm32f7.rcc.CR.PLLRDY==0);
+    while (stm32f7.rcc.CR.PLLRDY == 0)
+        ;
     stm32f7.rcc.CFGR.SW1 = 1;
-
 }
 
 template <typename gpio_t, gpio::alternate_function af, int I>
@@ -93,14 +94,14 @@ inline void reset_sd()
 inline void setup_sd_io()
 {
     reset_sd();
-    setup_all_af<decltype(stm32f7.GPIOC), gpio::alternate_function::af12, 8, 9, 10, 11, 12>(
-        stm32f7.GPIOC);
+    setup_all_af<decltype(stm32f7.GPIOC), gpio::alternate_function::af12, 8, 12>(stm32f7.GPIOC);
     setup_all_af<decltype(stm32f7.GPIOD), gpio::alternate_function::af12, 2>(stm32f7.GPIOD);
     using CLKCR = decltype(stm32f7.sdmmc.CLKCR);
     stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
-    stm32f7.sdmmc.CLKCR
-        = CLKCR::CLKDIV.shift((48 * 1000 * 1000) / (400 * 1000) - 2) | CLKCR::WIDBUS.shift(0);
+    stm32f7.sdmmc.CLKCR = CLKCR::CLKDIV.shift((48 * 1000 * 1000) / (400 * 1000) - 2)
+        | CLKCR::WIDBUS.shift(0) | CLKCR::HWFC_EN.shift(1);
+    stm32f7.sdmmc.DTIMER = 0xffffffff;
     stm32f7.sdmmc.POWER.PWRCTRL = 3;
     stm32f7.sdmmc.CLKCR |= CLKCR::CLKEN.shift(1);
     for (volatile int i = 0; i < 1024 * 16; i++)
@@ -147,23 +148,7 @@ void test_timer12()
 
 void setup_dma()
 {
-    stm32f7.rcc.AHB1ENR.DMA2EN=1;
-    stm32f7.sdmmc.DCTRL.DMAEN = 0;
-    stm32f7.sdmmc.ICR = 0xFFFFFFFF;
-    stm32f7.DMA2.S3CR.EN = 0;
-    stm32f7.DMA2.HIFCR = 0xFFFFFFFF;
-    stm32f7.DMA2.LIFCR = 0xFFFFFFFF;
-    stm32f7.DMA2.S3CR.CHSEL = 4;
-    stm32f7.DMA2.S3CR.MSIZE = 2;
-    stm32f7.DMA2.S3CR.PSIZE = 2;
-    stm32f7.DMA2.S3PAR = stm32f7.sdmmc.FIFO.address;
-    stm32f7.DMA2.S3M0AR = reinterpret_cast<uint32_t>(data);
-    stm32f7.DMA2.S3CR.MINC = 1;
-    stm32f7.DMA2.S3CR.PINC = 0;
-    stm32f7.DMA2.S3CR.PFCTRL = 1;
-    stm32f7.DMA2.S3CR.MBURST = 1;
-    stm32f7.DMA2.S3CR.PBURST = 1;
-    stm32f7.DMA2.S3CR.EN = 1;
+    stm32f7.rcc.AHB1ENR.DMA2EN = 1;
 }
 
 int main(void)
@@ -174,10 +159,11 @@ int main(void)
     volatile rcc::RCC_c_t* rcc = (rcc::RCC_c_t*)(stm32f7.rcc.address);
     volatile gpio::gpio_c_t* gpioc = (gpio::gpio_c_t*)(stm32f7.GPIOC.address);
     volatile gpio::gpio_c_t* gpioi = (gpio::gpio_c_t*)(stm32f7.GPIOI.address);
-    volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
+    // volatile sdmmc::sdmmc_c_t* sdmmc1 = (sdmmc::sdmmc_c_t*)(stm32f7.sdmmc.address);
     volatile spi::spi_c_t* spi2 = (spi::spi_c_t*)(stm32f7.SPI2.address);
     volatile spi::spi_c_t* spi6 = (spi::spi_c_t*)(stm32f7.SPI6.address);
     volatile uint32_t* timer12_CR = reinterpret_cast<volatile uint32_t*>(0x40001800);
+    volatile dma::dma_c_t* dma2 = reinterpret_cast<volatile dma::dma_c_t*>(stm32f7.DMA2.address);
     // ===========================================================================
     setup_clocks();
     rcc::enable_clock(stm32f7.rcc, stm32f7.SPI2);
@@ -197,20 +183,22 @@ int main(void)
     setup_dma();
     setup_sd_io();
     setup_codec_io();
-    ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
+    using sd_regs = decltype(stm32f7.sdmmc);
+    using dma2_regs = decltype(stm32f7.DMA2);
+    using dma2_ctrlr = dma::dma_ctrlr<dma2_regs>;
+    ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<sd_regs, dma2_ctrlr>> sdcrad;
     sdcrad.init();
-    using codec_t = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype(stm32f7.SPI2)>, vs1002_io>;
+    using codec_t
+        = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype(stm32f7.SPI2)>, vs1002_io, 25000000>;
 
     codec_t::init();
     int block = 0;
     sdcrad.select();
     for (;;)
     {
-        //char data[1024];
-        setup_dma();
+        // char data[1024];
+        // setup_dma();
         sdcrad.read_block(block, data);
-        stm32f7.DMA2.HIFCR = 0xFFFFFFFF;
-        stm32f7.DMA2.LIFCR = 0xFFFFFFFF;
         for (int i = 0; i < 512; i += 32)
         {
             codec_t::write_data(data + i);
