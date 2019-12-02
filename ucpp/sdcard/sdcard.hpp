@@ -58,9 +58,9 @@ struct Sdcard
         r = Sdcard::send_cmd<CMD3>();
         if(r)
         {
-            bus::set_speed(-1);
+            bus::set_speed(10000000);
             RCA = r->value>>16;
-            return set_block_size<Sdcard>(1024);
+            return true;//set_block_size<Sdcard>(1024);
         }
         return false;
     }
@@ -78,16 +78,26 @@ struct Sdcard
         return bus::template send_cmd<CMD>(argument);
     }
 
+    inline constexpr auto select()
+    {
+        using namespace commands;
+        return send_cmd<CMD7>(RCA<<16);
+    }
+
     inline constexpr auto read_block(uint32_t address, char* data)
     {
         using namespace commands;
-        auto resp  = send_cmd<CMD7>(RCA<<16);
-        if(resp)
-        {
-            resp  = send_cmd<CMD17>(address);
-            if(resp)
-                return bus::read_data(data, 1024);
-        }
+        int timeout = 10;
+        do{
+            //auto resp  = send_cmd<CMD7>(RCA<<16);
+            //if(resp)
+            {
+                auto  resp  = send_cmd<CMD17>(address);
+                if(resp)
+                    return bus::read_data(data, 512);
+            }
+
+        }while (timeout--);
         return false;
     }
 };

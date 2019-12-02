@@ -34,9 +34,10 @@ struct bitfield_value_t
     }
 };
 
-template <typename T, const uint32_t address>
+template <typename T, const uint32_t addr>
 struct reg_t
 {
+    inline static constexpr uint32_t address = addr;
     using type = T;
     static inline volatile T& value()noexcept
     {

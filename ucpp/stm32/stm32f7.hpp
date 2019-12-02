@@ -7,6 +7,7 @@
 #include "./pwr-regs.hpp"
 #include "./scb-regs.hpp"
 #include "./dma-regs.hpp"
+#include "./flash-regs.hpp"
 #include <stdint.h>
 
 using namespace ucpp::registers;
@@ -38,6 +39,7 @@ static constexpr struct stm32f7_t
         using tag = ucpp::tags::apb_bus_tag;
         static constexpr int index = 2;
     } apb2 = {};
+    static constexpr flash::flash_t<0x40023C00, 0> flash = {};
     static constexpr gpio::Gpio<0x40020000, 0> GPIOA = {};
     static constexpr gpio::Gpio<0x40020400, 1> GPIOB = {};
     static constexpr gpio::Gpio<0x40020800, 2> GPIOC = {};

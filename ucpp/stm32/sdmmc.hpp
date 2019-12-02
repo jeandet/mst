@@ -42,7 +42,7 @@ inline constexpr void cmd_clear_icr_flags()
 {
     using namespace ucpp::sdcard::commands;
     using ICR = decltype(sdmmc_dev::ICR);
-    sdmmc_dev::ICR |= ICR::CMDRENDC.shift(1) | ICR::CTIMEOUTC.shift(1) | ICR::CMDSENTC.shift(1) | ICR::CCRCFAILC.shift(1);
+    sdmmc_dev::ICR |= 0xFFFFFFFF;
 }
 template <typename sdmmc_dev, typename CMD>
 inline constexpr void cmd_set_cmd_reg()
@@ -92,7 +92,7 @@ struct sdmmc_ctrlr
         }
         else
         {
-            auto div = std::max((16 * 1000 * 1000) / (speed) - 2, 0);
+            auto div = std::max((48 * 1000 * 1000) / (speed) - 2, 0);
             sdmmc_dev::CLKCR
                 |= sdmmc_dev::CLKCR.CLKDIV.shift(div);
         }
@@ -138,23 +138,27 @@ struct sdmmc_ctrlr
         using namespace ucpp::sdcard::commands;
         sdmmc_dev::DTIMER = 0xfffffff;
         sdmmc_dev::DLEN = count;
-        sdmmc_dev::DCTRL = sdmmc_dev::DCTRL.DBLOCKSIZE.shift(10) | sdmmc_dev::DCTRL.RWMOD.shift(1) | sdmmc_dev::DCTRL.DTDIR.shift(1)| sdmmc_dev::DCTRL.DTEN.shift(1);
+        sdmmc_dev::ICR = 0xFFFFFFFF;
+        sdmmc_dev::DCTRL = sdmmc_dev::DCTRL.DBLOCKSIZE.shift(9)| sdmmc_dev::DCTRL.DMAEN.shift(1) | sdmmc_dev::DCTRL.RWMOD.shift(1) | sdmmc_dev::DCTRL.DTDIR.shift(1)| sdmmc_dev::DCTRL.DTEN.shift(1);
         int bytes = 0;
-        while (bytes!=count)
+//        while (bytes!=count)
+//        {
+//            while(sdmmc_dev::STA.RXFIFOE != 1)
+//            {
+//                uint32_t tmp = sdmmc_dev::FIFO;
+//                data[bytes+3] = static_cast<char>((tmp>>24)&0xff);
+//                data[bytes+2] = static_cast<char>((tmp>>16)&0xff);
+//                data[bytes+1] = static_cast<char>((tmp>>8)&0xff);
+//                data[bytes] = static_cast<char>(tmp&0xff);
+//                bytes += 4;
+//            }
+//        }
+        while (!sdmmc_dev::STA.DBCKEND)
         {
-            while(sdmmc_dev::STA.RXFIFOE != 1)
-            {
-                uint32_t tmp = sdmmc_dev::FIFO;
-                data[bytes+3] = static_cast<char>((tmp>>24)&0xff);
-                data[bytes+2] = static_cast<char>((tmp>>16)&0xff);
-                data[bytes+1] = static_cast<char>((tmp>>8)&0xff);
-                data[bytes] = static_cast<char>(tmp&0xff);
-                bytes += 4;
-            }
+            volatile int c = sdmmc_dev::FIFOCNT;
+            volatile int sta = sdmmc_dev::STA;
+            sta = sdmmc_dev::STA;
         }
-        volatile int c = sdmmc_dev::FIFOCNT;
-        volatile int sta = sdmmc_dev::STA;
-        sta = sdmmc_dev::STA;
         return true;
     }
 

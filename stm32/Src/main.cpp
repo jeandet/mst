@@ -29,6 +29,8 @@
 volatile int card_detect;
 using namespace ucpp::stm32;
 
+char data[1024];
+
 // SDMMC_D0 (PC8)  AF12
 // SDMMC_D1 (PC9)  AF12
 // SDMMC_D2 (PC10) AF12
@@ -53,6 +55,16 @@ void setup_clocks()
     //        ;
     //    stm32f7.rcc.CFGR = CFGR_t::SW0.shift(0) | CFGR_t::HPRE.shift(0) | CFGR_t::PPRE1.shift(0)
     //        | CFGR_t::PPRE2.shift(0);
+    stm32f7.rcc.PLLCFGR.PLLSRC = 0;
+    stm32f7.rcc.PLLCFGR.PLLM4 = 1;
+    stm32f7.rcc.PLLCFGR.PLLN7 = 1;
+    stm32f7.rcc.PLLCFGR.PLLN6 = 1;
+    stm32f7.rcc.PLLCFGR.PLLP0 = 1;
+    stm32f7.rcc.CR.PLLON=1;
+    stm32f7.flash.ACR.LATENCY = 1;
+    while (stm32f7.rcc.CR.PLLRDY==0);
+    stm32f7.rcc.CFGR.SW1 = 1;
+
 }
 
 template <typename gpio_t, gpio::alternate_function af, int I>
@@ -88,7 +100,7 @@ inline void setup_sd_io()
     stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
     rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
     stm32f7.sdmmc.CLKCR
-        = CLKCR::CLKDIV.shift((16 * 1000 * 1000) / (400 * 1000) - 2) | CLKCR::WIDBUS.shift(0);
+        = CLKCR::CLKDIV.shift((48 * 1000 * 1000) / (400 * 1000) - 2) | CLKCR::WIDBUS.shift(0);
     stm32f7.sdmmc.POWER.PWRCTRL = 3;
     stm32f7.sdmmc.CLKCR |= CLKCR::CLKEN.shift(1);
     for (volatile int i = 0; i < 1024 * 16; i++)
@@ -133,6 +145,27 @@ void test_timer12()
     *reinterpret_cast<volatile uint32_t*>(0x40001800) = 1;
 }
 
+void setup_dma()
+{
+    stm32f7.rcc.AHB1ENR.DMA2EN=1;
+    stm32f7.sdmmc.DCTRL.DMAEN = 0;
+    stm32f7.sdmmc.ICR = 0xFFFFFFFF;
+    stm32f7.DMA2.S3CR.EN = 0;
+    stm32f7.DMA2.HIFCR = 0xFFFFFFFF;
+    stm32f7.DMA2.LIFCR = 0xFFFFFFFF;
+    stm32f7.DMA2.S3CR.CHSEL = 4;
+    stm32f7.DMA2.S3CR.MSIZE = 2;
+    stm32f7.DMA2.S3CR.PSIZE = 2;
+    stm32f7.DMA2.S3PAR = stm32f7.sdmmc.FIFO.address;
+    stm32f7.DMA2.S3M0AR = reinterpret_cast<uint32_t>(data);
+    stm32f7.DMA2.S3CR.MINC = 1;
+    stm32f7.DMA2.S3CR.PINC = 0;
+    stm32f7.DMA2.S3CR.PFCTRL = 1;
+    stm32f7.DMA2.S3CR.MBURST = 1;
+    stm32f7.DMA2.S3CR.PBURST = 1;
+    stm32f7.DMA2.S3CR.EN = 1;
+}
+
 int main(void)
 {
     /* ==========================================================================
@@ -155,13 +188,13 @@ int main(void)
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
     rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
-    rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
     // test_timer12();
     // GPIO K3 = LCD backlight ctrl
     //    gpio::mode_field<3>(stm32f7.GPIOK) = gpio::mode::output;
     //    stm32f7.GPIOK.output_typer.get<3>() = gpio::output_type::open_drain;
     //    stm32f7.GPIOK.speedr.get<3>() = gpio::speed::very_high;
     // sdcard_init();
+    setup_dma();
     setup_sd_io();
     setup_codec_io();
     ucpp::sdcard::Sdcard<ucpp::stm32::sdmmc::sdmmc_ctrlr<decltype(stm32f7.sdmmc)>> sdcrad;
@@ -169,12 +202,16 @@ int main(void)
     using codec_t = ucpp::codec::vs1002<ucpp::stm32::spi::SPI<decltype(stm32f7.SPI2)>, vs1002_io>;
 
     codec_t::init();
-    int block = 2;
+    int block = 0;
+    sdcrad.select();
     for (;;)
     {
-        char data[1024];
+        //char data[1024];
+        setup_dma();
         sdcrad.read_block(block, data);
-        for (int i = 0; i < 1024; i += 32)
+        stm32f7.DMA2.HIFCR = 0xFFFFFFFF;
+        stm32f7.DMA2.LIFCR = 0xFFFFFFFF;
+        for (int i = 0; i < 512; i += 32)
         {
             codec_t::write_data(data + i);
         }
