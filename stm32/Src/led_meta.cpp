@@ -16,15 +16,19 @@
 #include "../../ucpp/stm32/gpio.hpp"
 #include "../../ucpp/stm32/rcc.hpp"
 #include "../../ucpp/stm32/stm32f7.hpp"
-#include "../../ucpp/strong_types.hpp"
 
+using namespace ucpp;
 using namespace ucpp::stm32;
+// LED on PB8
 
 int main(void)
 {
-    gpio::mode_field<3>(stm32f7.GPIOK)
-            = gpio::mode::output;
+    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOB);
+    stm32f7.GPIOB.moder.get<8>() = gpio::mode::output;
     for (;;)
     {
+        stm32f7.GPIOB.od.get<8>() = stm32f7.GPIOB.od.get<8>() xor 1;
+        for (volatile int i = 0; i < 1024 * 1024 * 2; i++)
+            ;
     }
 }
