@@ -4,6 +4,17 @@
 #include <tuple>
 
 namespace ucpp::registers {
+struct read_only{};
+struct read_write{};
+template<typename T>
+using is_read_only = std::is_same<T, read_only>;
+
+template<typename T>
+using is_read_only_t = typename is_read_only<T>::type;
+
+template<typename T>
+inline constexpr bool is_read_only_v = is_read_only<T>::value;
+
 
 template<typename reg_t, typename ...bitfield_t>
 void set(reg_t reg, bitfield_t... bitfields)
@@ -34,10 +45,11 @@ struct bitfield_value_t
     }
 };
 
-template <typename T, const uint32_t addr>
+template <typename T, const uint32_t addr, typename access_type=read_write>
 struct reg_t
 {
     inline static constexpr uint32_t address = addr;
+    inline static constexpr bool readonly = is_read_only_v<access_type>;
     using type = T;
     static inline volatile T& value()noexcept
     {
@@ -46,6 +58,7 @@ struct reg_t
 
     inline constexpr reg_t operator=(const T& value) const noexcept
     {
+        static_assert (!readonly,"this register is read-only");
         reg_t::value() = value;
         return reg_t<T,address>{};
     }
@@ -53,6 +66,7 @@ struct reg_t
     template<typename U>
     inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
     {
+        static_assert (!readonly,"this register is read-only");
         reg_t::value() = bit_field_value.value;
         return reg_t<T,address>{};
     }
@@ -60,23 +74,30 @@ struct reg_t
     template<typename U>
     inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
     {
+        static_assert (!readonly,"this register is read-only");
         reg_t::value() = (reg_t::value() & ~bit_field_value.mask) | bit_field_value.value;
         return reg_t<T,address>{};
     }
 
     inline constexpr reg_t operator|=(const T& value) const noexcept
     {
+        static_assert (!readonly,"this register is read-only");
         reg_t::value() |= value;
         return reg_t<T,address>{};
     }
 
     inline constexpr reg_t operator&=(const T& value) const noexcept
     {
+        static_assert (!readonly,"this register is read-only");
         reg_t::value() &= value;
         return reg_t<T,address>{};
     }
 
-    constexpr operator volatile T&() noexcept { return value(); }
+    constexpr operator volatile T&() noexcept
+    {
+        static_assert (!readonly,"this register is read-only");
+        return value();
+    }
     constexpr operator const volatile T&() const noexcept { return *reinterpret_cast<volatile T*>(address); }
 };
 
@@ -95,7 +116,7 @@ namespace details {
     }
 }
 
-template <typename reg_type, int start_index, int stop_index=start_index, typename value_t=int>
+template <typename reg_type, int start_index, int stop_index=start_index, typename value_t=int, typename access_type=read_write>
 struct bitfield_t
 {
     using reg_t = reg_type;
@@ -103,6 +124,7 @@ struct bitfield_t
     static constexpr const int start = std::min(start_index, stop_index);
     static constexpr const int stop = std::max(start_index, stop_index);
     static constexpr const typename reg_t::type mask = details::compute_mask<typename reg_t::type, start, stop>();
+    inline static constexpr bool readonly = is_read_only_v<access_type>;
 
     static constexpr bitfield_value_t<type> shift(const value_t value) noexcept
     {
@@ -111,12 +133,17 @@ struct bitfield_t
 
     inline constexpr bitfield_t operator=(const value_t& value) const noexcept
     {
+        static_assert (!readonly,"this bit field is read-only");
         typename reg_t::type tmp = shift(value).value;
         reg_t::value() = (reg_t::value() &  ~mask)|tmp;
         return bitfield_t<reg_t,start_index,stop_index,value_t>{};
     }
 
-    constexpr operator value_t() noexcept { return value_t((int(reg_t::value())& mask)>>start); }
+    constexpr operator value_t() noexcept
+    {
+        static_assert (!readonly,"this bit field is read-only");
+        return value_t((int(reg_t::value())& mask)>>start);
+    }
     constexpr operator value_t() const noexcept { return value_t((int(reg_t::value())& mask)>>start); }
 };
 

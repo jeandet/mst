@@ -57,11 +57,14 @@ set (CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m7 -flto -Wl,--gc-sections -mfpu=fpv5-
 
 file(GLOB_RECURSE SD_TESTS_SOURCES "Src/main.cpp")
 
-add_executable(sd_tests ${SD_TESTS_SOURCES} ${SYSTEM_SRC} ${LINKER_SCRIPT})
-ram_usage(sd_tests)
+add_executable(mp3_player ${SD_TESTS_SOURCES} ${SYSTEM_SRC} ${LINKER_SCRIPT})
+ram_usage(mp3_player)
+disassemble(mp3_player_asm mp3_player main)
 
 add_executable(empty Src/empty.cpp ${SYSTEM_SRC} ${LINKER_SCRIPT})
 ram_usage(empty)
+
+add_executable(register_playground "Src/register_playground.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 
 add_executable(register_meta "Src/register_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_meta "Src/bitfield_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})

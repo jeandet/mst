@@ -80,7 +80,7 @@ template<typename lhs_t=self_t, typename rhs_t=self_t, typename result_t=self_t,
 {
     template<class Object> struct permutation
     {
-        inline friend resolve_t<result_t, Object> operator+(const resolve_t<rhs_t, Object>& lhs, const resolve_t<lhs_t, Object>& rhs)
+        inline friend resolve_t<result_t, Object> operator-(const resolve_t<rhs_t, Object>& lhs, const resolve_t<lhs_t, Object>& rhs)
         {
             return resolve_t<result_t, Object>(value(lhs)-value(rhs));
         }

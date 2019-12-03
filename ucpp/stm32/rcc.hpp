@@ -62,6 +62,17 @@ auto& clk_enable_bit(const rcc_t& rcc, const device_t&,
 }
 
 template <typename rcc_t, typename device_t>
+auto& clk_enable_bit(const rcc_t& rcc, const device_t&,
+    typename std::enable_if_t<is_dma_v<device_t>>* = 0)
+{
+    if constexpr (device_t::index == 0)
+        return rcc.AHB1ENR.DMA1EN;
+    if constexpr (device_t::index == 1)
+        return rcc.AHB1ENR.DMA2EN;
+}
+
+
+template <typename rcc_t, typename device_t>
 auto& reset_bit(const rcc_t& rcc, const device_t&,
     typename std::enable_if_t<is_sdmmc_v<device_t>>* = 0)
 {

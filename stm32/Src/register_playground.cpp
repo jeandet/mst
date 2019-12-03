@@ -11,24 +11,24 @@
 #warning                                                                                           \
     "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
 #endif
-#include <stdint.h>
 
-// 0x4002 0400 GPIOB
-// 0x4002 0414 GPIOB_ODR
-// 0x4002 3800 RCC
-// 0x4002 3830 RCC_AHB1ENR
-// LED on PB8
+#include "../../ucpp/register.hpp"
+#include "../../ucpp/stm32/gpio.hpp"
+#include "../../ucpp/stm32/rcc.hpp"
+#include "../../ucpp/stm32/stm32f7.hpp"
+#include "../../ucpp/strong_types.hpp"
+
+using namespace ucpp::stm32;
+reg_t<uint16_t, 0x1FF0F442, read_only> flash_size_ro;
+reg_t<uint16_t, 0x1FF0F442, read_write> flash_size_rw;
 
 int main(void)
 {
-    // enable GPIOB
-    *((volatile uint32_t*)(0x40023830)) |= (1 << 1);
-    // configure GPIO PB8 as output
-    *((volatile uint32_t*)(0x40020400)) |= (1 << 16);
+    flash_size_rw = 10;
+    //flash_size_ro = 10;
+    gpio::mode_field<3>(stm32f7.GPIOK)
+            = gpio::mode::output;
     for (;;)
     {
-        //toggle led
-        *((volatile uint32_t*)(0x40020414)) = *((volatile uint32_t*)(0x40020414)) xor (1 << 8);
-        for (volatile int i = 0; i < 1024 * 1024 * 2; i++);
     }
 }

@@ -27,7 +27,7 @@ int main(void)
     stm32f7.GPIOB.moder.get<8>() = gpio::mode::output;
     for (;;)
     {
-        stm32f7.GPIOB.od.get<8>() = stm32f7.GPIOB.od.get<8>() xor 1;
+        stm32f7.GPIOB.od.get<8>() = !stm32f7.GPIOB.od.get<8>();
         for (volatile int i = 0; i < 1024 * 1024 * 2; i++)
             ;
     }

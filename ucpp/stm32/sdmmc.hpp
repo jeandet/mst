@@ -151,7 +151,7 @@ struct sdmmc_ctrlr
         }
     }
 
-    inline static constexpr auto read_data(uint32_t address, char* data, std::size_t count)
+    inline static constexpr auto read_block(ucpp::sdcard::block_address_t address, char* data)
     {
         using namespace ucpp::sdcard::commands;
         data_clear_icr_flags<sdmmc_dev>();
@@ -163,31 +163,16 @@ struct sdmmc_ctrlr
             | sdmmc_dev::DCTRL.DTDIR.shift(1) | sdmmc_dev::DCTRL.DTEN.shift(1);
         for (int timeout = 100; timeout > 0; timeout--)
         {
-            auto resp = sdmmc_ctrlr::send_cmd<CMD17>(address);
+            auto resp = sdmmc_ctrlr::send_cmd<CMD17>(address.value());
             if (resp)
                 break;
         }
-
-        int bytes = 0;
-        //        while (bytes!=count)
-        //        {
-        //            while(sdmmc_dev::STA.RXFIFOE != 1)
-        //            {
-        //                uint32_t tmp = sdmmc_dev::FIFO;
-        //                data[bytes+3] = static_cast<char>((tmp>>24)&0xff);
-        //                data[bytes+2] = static_cast<char>((tmp>>16)&0xff);
-        //                data[bytes+1] = static_cast<char>((tmp>>8)&0xff);
-        //                data[bytes] = static_cast<char>(tmp&0xff);
-        //                bytes += 4;
-        //            }
-        //        }
         while (!sdmmc_dev::STA.DBCKEND & !sdmmc_dev::STA.DATAEND)
         {
             volatile int c = sdmmc_dev::FIFOCNT;
             volatile int sta = sdmmc_dev::STA;
             sta = sdmmc_dev::STA;
         }
-        //data_clear_icr_flags<sdmmc_dev>();
         return true;
     }
 };
