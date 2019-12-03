@@ -44,8 +44,8 @@ namespace
     {
         using namespace ucpp::sdcard::commands;
         using ICR = decltype(sdmmc_dev::ICR);
-        sdmmc_dev::ICR |= sdmmc_dev::ICR.CCRCFAILC.shift(1) | sdmmc_dev::ICR.CTIMEOUTC.shift(1)
-            | sdmmc_dev::ICR.CMDRENDC.shift(1) | sdmmc_dev::ICR.CMDSENTC.shift(1);
+        sdmmc_dev::ICR |= ICR::CCRCFAILC.shift(1) | ICR::CTIMEOUTC.shift(1)
+            | ICR::CMDRENDC.shift(1) | ICR::CMDSENTC.shift(1);
     }
 
     template <typename sdmmc_dev>
@@ -53,9 +53,9 @@ namespace
     {
         using namespace ucpp::sdcard::commands;
         using ICR = decltype(sdmmc_dev::ICR);
-        sdmmc_dev::ICR |= sdmmc_dev::ICR.DCRCFAILC.shift(1) | sdmmc_dev::ICR.DTIMEOUTC.shift(1)
-            | sdmmc_dev::ICR.TXUNDERRC.shift(1) | sdmmc_dev::ICR.RXOVERRC.shift(1)
-            | sdmmc_dev::ICR.DATAENDC.shift(1) | sdmmc_dev::ICR.DBCKENDC.shift(1);
+        sdmmc_dev::ICR |= ICR::DCRCFAILC.shift(1) | ICR::DTIMEOUTC.shift(1)
+            | ICR::TXUNDERRC.shift(1) | ICR::RXOVERRC.shift(1)
+            | ICR::DATAENDC.shift(1) | ICR::DBCKENDC.shift(1);
     }
 
     template <typename sdmmc_dev, typename CMD>

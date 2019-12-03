@@ -17,16 +17,16 @@ struct reg_mock
     }
 
     template <typename U>
-    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype(
-        std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())
+    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> std::remove_reference_t<decltype(
+        std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())>
     {
         reg_mock::value() = bit_field_value.value;
         return reg_mock<address, T> {};
     }
 
     template <typename U>
-    inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> decltype(
-        std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())
+    inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> std::remove_reference_t<decltype(
+        std::declval<U>().value, std::declval<U>().mask, std::declval<reg_mock<address, T>>())>
     {
         reg_mock::value() = (reg_mock::value() & ~bit_field_value.mask) | bit_field_value.value;
         return reg_mock<address, T> {};

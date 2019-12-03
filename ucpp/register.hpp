@@ -64,7 +64,7 @@ struct reg_t
     }
 
     template<typename U>
-    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
+    inline constexpr auto operator=(const U& bit_field_value) const noexcept -> std::remove_reference_t<decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())>
     {
         static_assert (!readonly,"this register is read-only");
         reg_t::value() = bit_field_value.value;
@@ -72,7 +72,7 @@ struct reg_t
     }
 
     template<typename U>
-    inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())
+    inline constexpr auto operator|=(const U& bit_field_value) const noexcept -> std::remove_reference_t<decltype (std::declval<U>().value, std::declval<U>().mask, std::declval<reg_t<T,address>>())>
     {
         static_assert (!readonly,"this register is read-only");
         reg_t::value() = (reg_t::value() & ~bit_field_value.mask) | bit_field_value.value;
@@ -186,14 +186,14 @@ struct bitfield_array_t
             reg_t::value() = mask & (value << start_index);
         else if constexpr(std::conjunction_v<std::is_enum<T>, std::is_same<T,value_t>>)
         {
-            auto v = bitfield_cat<count-1>(static_cast<unsigned long long>(value), width);
+            auto v = bitfield_cat<count-1>(static_cast<typename reg_t::type>(value), width);
             reg_t::value() = mask & (v << start_index);
         }
         return bitfield_array_t<start_index,width,reg_t,count,value_t>{};
     }
 
-    constexpr operator typename reg_t::type() noexcept { return typename reg_t::type((int(reg_t::value())& mask)>>start_index); }
-    constexpr operator typename reg_t::type() const noexcept { return typename reg_t::type((int(reg_t::value())& mask)>>start_index); }
+    constexpr operator typename reg_t::type() noexcept { return (typename reg_t::type(reg_t::value())& mask)>>start_index; }
+    constexpr operator typename reg_t::type() const noexcept { return (typename reg_t::type(reg_t::value())& mask)>>start_index; }
 };
 
 }
