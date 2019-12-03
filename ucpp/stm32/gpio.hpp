@@ -3,6 +3,7 @@
 #include "../register.hpp"
 #include "../peripherals_tags.hpp"
 #include "./gpio-regs.hpp"
+#include "../gpio.hpp"
 
 using namespace ucpp::registers;
 namespace ucpp::stm32::gpio {
@@ -89,4 +90,39 @@ struct Gpio
     static constexpr bitfield_array_t<0,4,reg_t<uint32_t, base_address+0x24> ,8, alternate_function> afrh={};
 };
 
+template <typename soc_t, typename gpio_t>
+auto constexpr port_register(const soc_t& soc, const gpio_t& gpio)
+{
+    if constexpr (gpio_t::port == 0)
+            return soc.GPIOA;
+    if constexpr (gpio_t::port == 1)
+            return soc.GPIOB;
+    if constexpr (gpio_t::port == 2)
+            return soc.GPIOC;
+    if constexpr (gpio_t::port == 3)
+            return soc.GPIOD;
+    if constexpr (gpio_t::port == 4)
+            return soc.GPIOE;
+    if constexpr (gpio_t::port == 5)
+            return soc.GPIOF;
+    if constexpr (gpio_t::port == 6)
+            return soc.GPIOG;
+    if constexpr (gpio_t::port == 7)
+            return soc.GPIOH;
+    if constexpr (gpio_t::port == 8)
+            return soc.GPIOI;
+    if constexpr (gpio_t::port == 9)
+            return soc.GPIOJ;
+}
+
+}
+
+
+namespace ucpp::gpio {
+    template <typename soc_t, typename gpio_t, typename direction_t>
+    void constexpr set_direction(const soc_t& soc, const gpio_t& gpio, const direction_t direction)
+    {
+        using namespace ucpp::stm32::gpio;
+        mode_field<gpio_t::pin>(port_register(soc, gpio)) = direction;
+    }
 }

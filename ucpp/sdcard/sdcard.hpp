@@ -42,7 +42,6 @@ template <typename bus> struct Sdcard {
     } // SD HC
     else {
       do {
-        // 0x80100000U
         r = Sdcard::send_cmd<ACMD41>(0x40000000 | 0x80100000);
         volatile int v = r->value;
         v = r->value;

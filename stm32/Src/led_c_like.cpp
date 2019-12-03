@@ -32,3 +32,59 @@ int main(void)
         for (volatile int i = 0; i < 1024 * 1024 * 2; i++);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+int main(void)
+{
+    // enable GPIOB
+    uint32_t tmp = *((volatile uint32_t*)(0x40023830));
+    tmp &= ~(1u << 1);
+    tmp |= (1u << 1);
+    *((volatile uint32_t*)(0x40023830)) = tmp;
+    // configure GPIO PB8 as output
+    tmp = *((volatile uint32_t*)(0x40020400));
+    tmp &= ~(3u << 16);
+    tmp |= (1u << 16);
+    *((volatile uint32_t*)(0x40020400)) = tmp;
+    for (;;)
+    {
+        //toggle led
+        tmp = *((volatile uint32_t*)(0x40020414));
+        tmp &= ~(1u << 8);
+        tmp |= (1u << 8);
+        *((volatile uint32_t*)(0x40020414)) = tmp;
+        //delay
+        for (volatile int i = 0; i < 1024 * 1024 * 2; i++);
+    }
+}
+*/
+
+
+
+
+
+

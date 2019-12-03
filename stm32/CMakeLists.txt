@@ -69,6 +69,9 @@ add_executable(register_playground "Src/register_playground.cpp" ${SYSTEM_SRC} $
 add_executable(register_meta "Src/register_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_meta "Src/bitfield_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(led_meta "Src/led_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(led_soft_pwm "Src/led_soft_pwm.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(led_soft_pwm_strong "Src/led_soft_pwm_strong.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
+add_executable(led_soft_pwm_strong2 "Src/led_soft_pwm_strong2.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 add_executable(bitfield_or_meta "Src/bitfield_or_meta.cpp" ${SYSTEM_SRC} ${LINKER_SCRIPT})
 ram_usage(bitfield_meta)
 

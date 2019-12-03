@@ -19,15 +19,17 @@
 
 using namespace ucpp;
 using namespace ucpp::stm32;
+using namespace ucpp::gpio;
 // LED on PB8
 
 int main(void)
 {
-    rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOB);
-    stm32f7.GPIOB.moder.get<8>() = gpio::mode::output;
+    rcc::enable_clock(stm32f7, stm32f7.GPIOB);
+    set_direction(stm32f7, GPIOB8, stm32::gpio::mode::output);
     for (;;)
     {
         stm32f7.GPIOB.od.get<8>() = !stm32f7.GPIOB.od.get<8>();
+        //stm32f7.GPIOB.od = stm32f7.GPIOB.od xor (1<<8);
         for (volatile int i = 0; i < 1024 * 1024 * 2; i++)
             ;
     }

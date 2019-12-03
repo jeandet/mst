@@ -64,10 +64,10 @@ inline void setup_all_af(gpio_t &gpio) {
 }
 
 inline void reset_sd() {
-  rcc::reset(stm32f7.rcc, stm32f7.sdmmc, true);
+  rcc::reset(stm32f7, stm32f7.sdmmc, true);
   for (volatile int i = 0; i < 4; i++)
     ;
-  rcc::reset(stm32f7.rcc, stm32f7.sdmmc, false);
+  rcc::reset(stm32f7, stm32f7.sdmmc, false);
 }
 inline void setup_sd_io() {
   reset_sd();
@@ -77,7 +77,7 @@ inline void setup_sd_io() {
       stm32f7.GPIOD);
   using CLKCR = decltype(stm32f7.sdmmc.CLKCR);
   stm32f7.rcc.DKCFGR2.SDMMCSEL = 1;
-  rcc::enable_clock(stm32f7.rcc, stm32f7.sdmmc);
+  rcc::enable_clock(stm32f7, stm32f7.sdmmc);
   stm32f7.sdmmc.CLKCR =
       CLKCR::CLKDIV.shift((48 * 1000 * 1000) / (400 * 1000) - 2) |
       CLKCR::WIDBUS.shift(0) | CLKCR::HWFC_EN.shift(1);
@@ -121,14 +121,14 @@ inline void setup_codec_io() {
 }
 
 void enable_peripherals() {
-  rcc::enable_clock(stm32f7.rcc, stm32f7.DMA2);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.SPI2);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOA);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOB);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOC);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOD);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOI);
-  rcc::enable_clock(stm32f7.rcc, stm32f7.GPIOK);
+  rcc::enable_clock(stm32f7, stm32f7.DMA2);
+  rcc::enable_clock(stm32f7, stm32f7.SPI2);
+  rcc::enable_clock(stm32f7, stm32f7.GPIOA);
+  rcc::enable_clock(stm32f7, stm32f7.GPIOB);
+  rcc::enable_clock(stm32f7, stm32f7.GPIOC);
+  rcc::enable_clock(stm32f7, stm32f7.GPIOD);
+  rcc::enable_clock(stm32f7, stm32f7.GPIOI);
+  rcc::enable_clock(stm32f7, stm32f7.GPIOK);
 }
 
 int main(void) {

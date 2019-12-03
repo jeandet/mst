@@ -84,17 +84,17 @@ auto& reset_bit(const rcc_t& rcc, const device_t&,
 using namespace ucpp::registers;
 namespace ucpp::stm32::rcc
 {
-template <typename rcc_type, typename device_t>
-void enable_clock(const rcc_type& rccdev, const device_t& device, bool state = true)
+template <typename soc_type, typename device_t>
+void enable_clock(const soc_type& soc, const device_t& device, bool state = true)
 {
-    clk_enable_bit(rccdev, device) = state;
-    state = clk_enable_bit(rccdev, device);
+    clk_enable_bit(soc.rcc, device) = state;
+    state = clk_enable_bit(soc.rcc, device);
     (void)state;
 }
 
-template <typename rcc_type, typename device_t>
-void reset(const rcc_type& rccdev, const device_t& device, bool state = true)
+template <typename soc_type, typename device_t>
+void reset(const soc_type& soc, const device_t& device, bool state = true)
 {
-    reset_bit(rccdev, device) = state;
+    reset_bit(soc.rcc, device) = state;
 }
 }
